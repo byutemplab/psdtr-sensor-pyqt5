@@ -1,4 +1,4 @@
-# msr_sensor
+# Molten Salt Reactor Sensor
 
 Repo including code for
 - Heliotis v3 controller
