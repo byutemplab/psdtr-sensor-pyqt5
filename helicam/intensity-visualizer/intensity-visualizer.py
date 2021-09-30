@@ -182,8 +182,8 @@ def test2():
 def test3():
   # Import data
   print("Enter path of the .npy file to visualize: ")
-  path = getch()
-  data = np.load('logs/intensity_img_2021_09_29-11:09:26_AM.npy')
+  path = input()
+  data = np.load(path)
 
   # Start by showing frame 0 and I parameter
   frameNum = 0
