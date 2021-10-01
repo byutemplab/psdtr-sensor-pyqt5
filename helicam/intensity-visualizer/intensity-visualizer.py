@@ -6,6 +6,7 @@
 # -------------------------------------------------------------------------------
 
 from __future__ import division, print_function
+from libHeLIC import *
 from matplotlib.widgets import TextBox, Slider
 import matplotlib.pyplot as plt
 import numpy as np
@@ -16,38 +17,10 @@ import ctypes as ct
 from datetime import datetime
 import matplotlib as mpl
 mpl.use('WxAgg')
+sys.path.append(os.path.abspath('../wrapper'))
 
-# ========= IMPORT libHeLIC wrapper ========= #
-
-if sys.platform == "win32":
-    from msvcrt import getch
-else:  # linux
-    from getch import getch
-
-try:
-    if sys.platform == "win32":
-        prgPath = os.environ["PROGRAMFILES"]
-        sys.path.insert(0, prgPath+r'\Heliotis\heliCam\Python\wrapper')
-    else:  # "linux"
-        sys.path.insert(0, r'/usr/share/libhelic/python/wrapper')
-except BaseException as err:
-    print('Path Error'+str(err))
-
-try:
-    from libHeLIC import *
-except ImportError as exc:
-    print('-'*30)
-    print("Error: failed to import libHeLIC module ({})".format(exc))
-    print("Pleas check if the path to Python wrapper correct.")
-    print("(libHeLICTester.py Line 18-25)")
-    print("For more details look at the documentation from the heliSDK in python folder.")
-    print('-'*30)
-    print("Press a key to exit...")
-    getch()
-    sys.exit()
 
 # ========= Get registers ========= #
-
 
 def test1():
     heSys = LibHeLIC()
@@ -378,7 +351,7 @@ if __name__ == '__main__':
             for (key, func, txt) in entry:
                 print(key, func.__name__+'()', txt)
             print('x', '', 'exit')
-            c = getch()  # using from console
+            c = input()  # using from console
             if c == 'x':
                 break
             for (key, func, txt) in entry:
