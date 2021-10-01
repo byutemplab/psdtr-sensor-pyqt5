@@ -5,13 +5,13 @@ Initial contribution by csi-dcsc (repo: https://github.com/csi-dcsc/Pycrafter650
 
 Compatible with Python 2 and Python 3. Tested in Windows 10.
 
-## Required modules:
+### Required modules:
 
 - Pyusb
 - Numpy
 - libusb
 
-## Driver installation:
+### Driver installation:
 
 - Download Zadig (http://zadig.akeo.ie/)
 - Connect the projector
@@ -20,39 +20,39 @@ Compatible with Python 2 and Python 3. Tested in Windows 10.
 - Replace WinUSB driver with libusb-win32 driver
 - _NOTE: TI GUI will stop working once you replace the driver. If you want to restore the WinUSB driver, go to Device Manager, search for the libusb-win32 driver, uninstall and check 'Delete the driver software for this device'_
 
-## Features list:
+### Features list:
 
 - Basic control of the evaluation module (modes selection, idle toggle, start/pause/stop sequences)
 - Upload of a sequence of EXCLUSIVELY BINARY images for "patterns on the fly" mode, with independent control of exposure times, dark times, triggers and repetitions number. RGB binary color selection available (pure red, magenta, etc)
 
-## COMMANDS LIST
+### COMMANDS LIST
 
-### To open a connection with the DMD:
+#### To open a connection with the DMD:
 
 import pycrafter6500
 controller=pycrafter6500.dmd()
 
-### To set the DMD to idle mode
+#### To set the DMD to idle mode
 
 controller.idle_on()
 
-### To wake the DMD from idle mode
+#### To wake the DMD from idle mode
 
 controller.idle_off()
 
-### To set the DMD to standby
+#### To set the DMD to standby
 
 controller.standby()
 
-### To wake the DMD from standby
+#### To wake the DMD from standby
 
 controller.wakeup()
 
-### To reset the DMD
+#### To reset the DMD
 
 controller.reset()
 
-### To change the DMD operating mode:
+#### To change the DMD operating mode:
 
 controller.changemode(mode)
 
@@ -63,13 +63,13 @@ controller.changemode(mode)
 - mode=2 for video pattern mode
 - mode=3 for pattern on the fly mode
 
-### To start, pause or stop a sequence
+#### To start, pause or stop a sequence
 
 controller.startsequence()
 controller.pausesequence()
 controller.stopsequence()
 
-### To define a sequence for pattern on the fly mode
+#### To define a sequence for pattern on the fly mode
 
 controller.defsequence(images, color, exposures, trigger in, dark time, trigger out, repetitions)
 
