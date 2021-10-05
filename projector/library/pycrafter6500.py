@@ -272,10 +272,7 @@ class dmd():
             'disabled': '000',
             'red':      '001',
             'green':    '010',
-            'yellow':   '011',
             'blue':     '100',
-            'magenta':  '101',
-            'cyan':     '110',
             'white':    '111',
         }
 

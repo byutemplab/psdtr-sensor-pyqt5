@@ -304,10 +304,77 @@ def test4():
     # Shut down camera
     heSys.Close()
 
-# ========= List connected cameras ========= #
+# ========= Visualize Intensity (average)========= #
 
 
 def test5():
+    # Init library and open camera
+    heSys = LibHeLIC()
+    heSys.Open(0, sys='c3cam_sl70')
+
+    # Set parameters
+    frames = 50
+    settings = (
+        ('CamMode',       3),         # intensity
+        ('SensTqp',       69989),     # measure 500 Hz
+        ('SensDeltaExp',  0),
+        ('SensNavM2',     2),
+        ('SensNFrames',   frames),
+        ('BSEnable',      1),
+        ('DdsGain',       2),
+        ('TrigFreeExtN',  1),
+        ('InvEncCnt',     0),
+        ('FWHMnFrame',    1),
+        ('IterMaxFrac',   2),
+        ('MinEnergWin',   16),
+        ('OffsetMethod',  1),
+        ('UseLastFrame',  1),
+        ('NFrmAvg',       3),
+        ('AcqStop',       0),
+    )
+    for k, v in settings:
+        try:
+            setattr(heSys.map, k, v)  # heSys.map.k=v
+        except RuntimeError:
+            error('Could not set map property %s to %s', k, v)
+
+    # Allocate place for data in IQ format
+    heSys.AllocCamData(1, LibHeLIC.CamDataFmt['DF_I16Q16'], 0, 0, 0)
+
+    # Get raw data from the camera
+    cnt = 0
+    res = heSys.Acquire()
+    print("Acquire", cnt, "returned", res)
+
+    # Process data
+    cd = heSys.ProcessCamData(1, 0, 0)
+    print("ProcessCamData", cnt, "returned", cd.contents.data)
+
+    # Get data and put it in an array
+    # Array shape: frames * 300 [width] * 300 [height] * 2 [I and Q]
+    img = heSys.GetCamData(1, 0, 0)
+    data = img.contents.data
+    data = LibHeLIC.Ptr2Arr(data, (frames, 300, 300, 2), ct.c_int16)
+
+    # Sum data from all frames, skip frame 0
+    intensity = data[1:, :, :, :].sum(
+        axis=0, dtype=np.int16).sum(axis=2, dtype=np.int16)
+    print(intensity)
+
+    # Initialize plot
+    fig, ax = plt.subplots()
+    graph = ax.imshow(intensity)
+
+    # Show graph + sliders
+    plt.show()
+
+    # Shut down camera
+    heSys.Close()
+
+# ========= List connected cameras ========= #
+
+
+def test6():
     print('-'*20)
     heSys = LibHeLIC()
     [count, serials] = LibHeLIC.GetSerials()
@@ -343,7 +410,8 @@ if __name__ == '__main__':
             ('2', test2, 'intensity image'),
             ('3', test3, 'display saved intensity image'),
             ('4', test4, 'amplitude + phase image'),
-            ('5', test5, 'scan connected heliCams and print the serial numbers'),
+            ('5', test5, 'intensity image (averaged)'),
+            ('6', test6, 'scan connected heliCams and print the serial numbers'),
             ('z', testz, 'print out vesions from python. print out path.'),
         )
         while True:
