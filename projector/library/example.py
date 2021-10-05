@@ -12,7 +12,7 @@ dlp = pycrafter6500.dmd()
 dlp.stopsequence()
 dlp.changemode(3)
 
-color = 'blue'
+color = 'green'
 exposure = [0]*30
 dark_time = [0]*30
 trigger_in = [False]*30

@@ -268,7 +268,7 @@ class dmd():
     def defsequence(self, images, color, exp, ti, dt, to, rep):
 
         # Convert color to binary rgb
-        to_rgb = {
+        to_binary_rgb = {
             'disabled': '000',
             'red':      '001',
             'green':    '010',
@@ -306,11 +306,11 @@ class dmd():
             if i < ((num-1)//24):
                 for j in range(i*24, (i+1)*24):
                     self.definepattern(
-                        j, exp[j], 1, to_rgb[color], ti[j], dt[j], to[j], i, j-i*24)
+                        j, exp[j], 1, to_binary_rgb[color], ti[j], dt[j], to[j], i, j-i*24)
             else:
                 for j in range(i*24, num):
                     self.definepattern(
-                        j, exp[j], 1, to_rgb[color], ti[j], dt[j], to[j], i, j-i*24)
+                        j, exp[j], 1, to_binary_rgb[color], ti[j], dt[j], to[j], i, j-i*24)
 
         self.configurelut(num, rep)
 
