@@ -166,7 +166,7 @@ class App(TabWidget):
         self.addTab(self.projector_tab, QIcon(
             "icons/projector-icon.png"), "DMD Projector")
         self.addTab(self.camera_tab, QIcon(
-            "icons/camera-icon.png"), "Heliotis Camera")
+            "icons/camera-icon.png"), "  Heliotis Camera")
 
         # Tab header
         font = QtGui.QFont()
@@ -190,11 +190,63 @@ class App(TabWidget):
         font = QtGui.QFont()
         font.setPointSize(10)
 
+        # Number points x label
+        self.header = QtWidgets.QLabel(self)
+        self.header.setFont(font)
+        self.header.setText("# points x")
+        self.header.move(160, 410)
+
+        # Number points x
+        points_x_input = QSpinBox(self)
+        points_x_input.move(160, 430)
+        points_x_input.resize(100, 30)
+        points_x_input.setValue(4)
+        points_x_input.valueChanged.connect(self.changeNumPointsX)
+
+        # Number points y label
+        self.header = QtWidgets.QLabel(self)
+        self.header.setFont(font)
+        self.header.setText("# points y")
+        self.header.move(160 + 133, 410)
+
+        # Number points y
+        points_y_input = QSpinBox(self)
+        points_y_input.move(160 + 133, 430)
+        points_y_input.resize(100, 30)
+        points_y_input.setValue(4)
+        points_y_input.valueChanged.connect(self.changeNumPointsY)
+
+        # Offset x label
+        self.header = QtWidgets.QLabel(self)
+        self.header.setFont(font)
+        self.header.setText("Offset x")
+        self.header.move(160 + 133 * 2, 410)
+
+        # Offset x
+        offset_x_input = QSpinBox(self)
+        offset_x_input.move(160 + 133 * 2, 430)
+        offset_x_input.resize(100, 30)
+        offset_x_input.setValue(0)
+        offset_x_input.valueChanged.connect(self.changeOffsetX)
+
+        # Offset y label
+        self.header = QtWidgets.QLabel(self)
+        self.header.setFont(font)
+        self.header.setText("Offset y")
+        self.header.move(160 + 133 * 3, 410)
+
+        # Offset y
+        offset_y_input = QSpinBox(self)
+        offset_y_input.move(160 + 133 * 3, 430)
+        offset_y_input.resize(100, 30)
+        offset_y_input.setValue(0)
+        offset_y_input.valueChanged.connect(self.changeOffsetY)
+
         # Color selection label
         self.header = QtWidgets.QLabel(self)
         self.header.setFont(font)
         self.header.setText("Point color")
-        self.header.move(160, 410)
+        self.header.move(160, 480)
 
         # Color Selection
         color_input = QComboBox(self)
@@ -202,7 +254,7 @@ class App(TabWidget):
         color_input.addItem("red")
         color_input.addItem("blue")
         color_input.addItem("white")
-        color_input.move(160, 430)
+        color_input.move(160, 500)
         color_input.resize(100, 30)
         color_input.activated[str].connect(self.colorChange)
 
@@ -210,11 +262,11 @@ class App(TabWidget):
         self.header = QtWidgets.QLabel(self)
         self.header.setFont(font)
         self.header.setText("Point diameter")
-        self.header.move(160 + 133, 410)
+        self.header.move(160 + 133, 480)
 
         # Point diameter
         diameter_input = QSpinBox(self)
-        diameter_input.move(160 + 133, 430)
+        diameter_input.move(160 + 133, 500)
         diameter_input.resize(100, 30)
         diameter_input.setRange(1, 1000)
         diameter_input.setValue(50)
@@ -224,14 +276,14 @@ class App(TabWidget):
         button_preview = QPushButton('Update Preview', self)
         button_preview.clicked.connect(self.m.updateChart)
         button_preview.setToolTip('Preview pattern')
-        button_preview.move(160 + 133 * 2, 430)
+        button_preview.move(160 + 133 * 2, 500)
         button_preview.resize(100, 30)
 
         # Send pattern to the projector when the button is clicked
         button = QPushButton('Set Pattern', self)
         button.clicked.connect(self.m.setPattern)
         button.setToolTip('Send pattern to the projector')
-        button.move(160 + 133 * 3, 430)
+        button.move(160 + 133 * 3, 500)
         button.resize(100, 30)
 
         self.show()
@@ -241,6 +293,18 @@ class App(TabWidget):
 
     def pointDiameterChange(self, value):
         self.m.point_diameter = value
+
+    def changeNumPointsX(self, value):
+        self.m.points_x = value
+
+    def changeNumPointsY(self, value):
+        self.m.points_y = value
+
+    def changeOffsetX(self, value):
+        self.m.offset_x = value
+
+    def changeOffsetY(self, value):
+        self.m.offset_y = value
 
 
 class PlotCanvas(FigureCanvas):
@@ -261,8 +325,12 @@ class PlotCanvas(FigureCanvas):
         # Set initial parameters
         self.point_color = "green"
         self.point_diameter = 50
+        self.points_x = 4
+        self.points_y = 4
+        self.offset_x = 0
+        self.offset_y = 0
         self.pattern = CreatePointsPattern(
-            1920, 1080, 4, 2, 0, 0, self.point_diameter, "circle")
+            1920, 1080, self.points_x, self.points_y, self.offset_x, self.offset_y, self.point_diameter, "circle")
         self.ax = self.figure.add_subplot(111)
         cmap = matplotlib.colors.ListedColormap(
             ['white', to_rgb[self.point_color]])
@@ -276,15 +344,15 @@ class PlotCanvas(FigureCanvas):
         cmap = matplotlib.colors.ListedColormap(
             ['white', to_rgb[self.point_color]])
         self.pattern = CreatePointsPattern(
-            1920, 1080, 4, 2, 0, 0, self.point_diameter, "circle")
+            1920, 1080, self.points_x, self.points_y, self.offset_x, self.offset_y, self.point_diameter, "circle")
         self.ax.imshow(self.pattern, cmap=cmap)
         self.fig.canvas.draw_idle()
         print("chart preview updated")
 
     def setPattern(self):
-        pattern = CreatePointsPattern(
-            1920, 1080, 4, 2, 0, 0, self.point_diameter, "circle")
-        SetPattern(pattern, self.point_color)
+        self.pattern = CreatePointsPattern(
+            1920, 1080, self.points_x, self.points_y, self.offset_x, self.offset_y, self.point_diameter, "circle")
+        SetPattern(self.pattern, self.point_color)
 
 
 if __name__ == '__main__':
