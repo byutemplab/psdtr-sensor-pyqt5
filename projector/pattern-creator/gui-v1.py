@@ -1,7 +1,8 @@
 import sys
 
-from PyQt5.QtWidgets import QApplication, QMainWindow, QMenu, QVBoxLayout, QSizePolicy, QMessageBox, QWidget, QPushButton, QComboBox, QSpinBox
-from PyQt5.QtGui import QIcon
+from PyQt5.QtWidgets import QApplication, QMainWindow, QMenu, QVBoxLayout, QSizePolicy, QMessageBox, QWidget, QPushButton, QComboBox, QSpinBox, QGraphicsDropShadowEffect
+from PyQt5.QtGui import QIcon, QColor
+from PyQt5 import QtWidgets, QtGui, QtCore
 
 
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
@@ -95,55 +96,143 @@ def SetPattern(pattern, color):
     dlp.startsequence()
 
 
-class App(QMainWindow):
+class TabBar(QtWidgets.QTabBar):
+    def tabSizeHint(self, index):
+        s = QtWidgets.QTabBar.tabSizeHint(self, index)
+        s.transpose()
+        return s
+
+    def paintEvent(self, event):
+        painter = QtWidgets.QStylePainter(self)
+        opt = QtWidgets.QStyleOptionTab()
+
+        for i in range(self.count()):
+            self.initStyleOption(opt, i)
+            painter.drawControl(QtWidgets.QStyle.CE_TabBarTabShape, opt)
+            painter.save()
+
+            s = opt.rect.size()
+            s.transpose()
+            r = QtCore.QRect(QtCore.QPoint(), s)
+            r.moveCenter(opt.rect.center())
+            opt.rect = r
+
+            c = self.tabRect(i).center()
+            painter.translate(c)
+            painter.rotate(90)
+            painter.translate(-c)
+            painter.drawControl(QtWidgets.QStyle.CE_TabBarTabLabel, opt)
+            painter.restore()
+
+
+class TabWidget(QtWidgets.QTabWidget):
+    def __init__(self, *args, **kwargs):
+        QtWidgets.QTabWidget.__init__(self, *args, **kwargs)
+        self.setTabBar(TabBar(self))
+        self.setTabPosition(QtWidgets.QTabWidget.West)
+
+
+class ProxyStyle(QtWidgets.QProxyStyle):
+    def drawControl(self, element, opt, painter, widget):
+        if element == QtWidgets.QStyle.CE_TabBarTabLabel:
+            ic = self.pixelMetric(QtWidgets.QStyle.PM_TabBarIconSize)
+            r = QtCore.QRect(opt.rect)
+            w = 0 if opt.icon.isNull() else opt.rect.width() + \
+                self.pixelMetric(QtWidgets.QStyle.PM_TabBarIconSize)
+            r.setHeight(opt.fontMetrics.width(opt.text) + w)
+            r.moveBottom(opt.rect.bottom())
+            opt.rect = r
+        QtWidgets.QProxyStyle.drawControl(self, element, opt, painter, widget)
+
+
+class App(TabWidget):
 
     def __init__(self):
         super().__init__()
-        self.left = 100
-        self.top = 100
-        self.title = 'Projector Pattern Settings'
-        self.width = 640
-        self.height = 400
+        self.left = 340
+        self.top = 80
+        self.title = 'TEMPLAB MSR Sensor'
+        self.width = 700
+        self.height = 600
         self.initUI()
 
     def initUI(self):
         self.setWindowTitle(self.title)
+        self.setWindowIcon(QIcon('icons/msr-sensor-icon.png'))
         self.setGeometry(self.left, self.top, self.width, self.height)
 
-        self.m = PlotCanvas(self, width=5, height=4)
-        self.m.move(0, 0)
+        self.projector_tab = QWidget()
+        self.camera_tab = QWidget()
+        self.addTab(self.projector_tab, QIcon(
+            "icons/projector-icon.png"), "DMD Projector")
+        self.addTab(self.camera_tab, QIcon(
+            "icons/camera-icon.png"), "Heliotis Camera")
+
+        # Tab header
+        font = QtGui.QFont()
+        font.setPointSize(20)
+        self.header = QtWidgets.QLabel(self)
+        self.header.setFont(font)
+        self.header.setText("Projector Settings")
+        self.header.move(160, 20)
+
+        # Pattern preview from matplotlib
+        self.m = PlotCanvas(self, width=5, height=3)
+        self.m.move(160, 80)
+        # Set shadow behind widget
+        shadow = QGraphicsDropShadowEffect()
+        shadow.setBlurRadius(15)
+        shadow.setOffset(1)
+        shadow.setColor(QColor(20, 20, 20, 30))
+        self.m.setGraphicsEffect(shadow)
+
+        # Set font for all small headers
+        font = QtGui.QFont()
+        font.setPointSize(10)
+
+        # Color selection label
+        self.header = QtWidgets.QLabel(self)
+        self.header.setFont(font)
+        self.header.setText("Point color")
+        self.header.move(160, 410)
 
         # Color Selection
-        comboBox = QComboBox(self)
-        comboBox.addItem("green")
-        comboBox.addItem("red")
-        comboBox.addItem("blue")
-        comboBox.addItem("white")
-        comboBox.move(500, 0)
-        comboBox.resize(140, 60)
-        comboBox.activated[str].connect(self.colorChange)
+        color_input = QComboBox(self)
+        color_input.addItem("green")
+        color_input.addItem("red")
+        color_input.addItem("blue")
+        color_input.addItem("white")
+        color_input.move(160, 430)
+        color_input.resize(100, 30)
+        color_input.activated[str].connect(self.colorChange)
+
+        # Point diameter selection label
+        self.header = QtWidgets.QLabel(self)
+        self.header.setFont(font)
+        self.header.setText("Point diameter")
+        self.header.move(160 + 133, 410)
 
         # Point diameter
         diameter_input = QSpinBox(self)
-        diameter_input.move(500, 80)
-        diameter_input.resize(140, 60)
+        diameter_input.move(160 + 133, 430)
+        diameter_input.resize(100, 30)
         diameter_input.setRange(1, 1000)
         diameter_input.setValue(50)
         diameter_input.valueChanged.connect(self.pointDiameterChange)
 
         # Preview pattern
-        button_preview = QPushButton('Preview', self)
+        button_preview = QPushButton('Update Preview', self)
         button_preview.clicked.connect(self.m.updateChart)
         button_preview.setToolTip('Preview pattern')
-        button_preview.move(500, 160)
-        button_preview.resize(140, 60)
+        button_preview.move(160 + 133 * 2, 430)
+        button_preview.resize(100, 30)
 
         # Send pattern to the projector when the button is clicked
-        button = QPushButton('Set pattern', self)
+        button = QPushButton('Set Pattern', self)
         button.clicked.connect(self.m.setPattern)
         button.setToolTip('Send pattern to the projector')
-        button.move(500, 240)
-        button.resize(140, 60)
+        button.move(160 + 133 * 3, 430)
+        button.resize(100, 30)
 
         self.show()
 
@@ -178,6 +267,9 @@ class PlotCanvas(FigureCanvas):
         cmap = matplotlib.colors.ListedColormap(
             ['white', to_rgb[self.point_color]])
         self.ax.imshow(self.pattern, cmap=cmap)
+        # self.ax.axes.xaxis.set_visible(False)
+        # self.ax.axes.yaxis.set_visible(False)
+        # self.ax.grid(True)
         self.draw()
 
     def updateChart(self):
@@ -207,5 +299,7 @@ if __name__ == '__main__':
 
     # Start GUI
     app = QApplication(sys.argv)
+    QApplication.setStyle(ProxyStyle())
+    app.setStyle("Fusion")
     ex = App()
     sys.exit(app.exec_())
