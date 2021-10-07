@@ -176,6 +176,14 @@ class App(TabWidget):
         self.header.setText("Projector Settings")
         self.header.move(160, 20)
 
+        # Connection status
+        font = QtGui.QFont()
+        font.setPointSize(20)
+        self.header = QtWidgets.QLabel(self)
+        self.header.setFont(font)
+        self.header.setText("Projector Settings")
+        self.header.move(160, 20)
+
         # Pattern preview from matplotlib
         self.m = PlotCanvas(self, width=5, height=3)
         self.m.move(160, 80)
@@ -329,12 +337,20 @@ class PlotCanvas(FigureCanvas):
         self.points_y = 4
         self.offset_x = 0
         self.offset_y = 0
+
+        # Create pattern
         self.pattern = CreatePointsPattern(
             1920, 1080, self.points_x, self.points_y, self.offset_x, self.offset_y, self.point_diameter, "circle")
         self.ax = self.figure.add_subplot(111)
+
+        # Custom binary colormap dependant on point_color selection
         cmap = matplotlib.colors.ListedColormap(
             ['white', to_rgb[self.point_color]])
-        self.ax.imshow(self.pattern, cmap=cmap)
+        self.graph = self.ax.imshow(self.pattern, cmap=cmap)
+
+        # Record coordinates when user clicks on the plot
+        self.fig.canvas.mpl_connect('button_press_event', self.onClick)
+
         # self.ax.axes.xaxis.set_visible(False)
         # self.ax.axes.yaxis.set_visible(False)
         # self.ax.grid(True)
@@ -345,7 +361,8 @@ class PlotCanvas(FigureCanvas):
             ['white', to_rgb[self.point_color]])
         self.pattern = CreatePointsPattern(
             1920, 1080, self.points_x, self.points_y, self.offset_x, self.offset_y, self.point_diameter, "circle")
-        self.ax.imshow(self.pattern, cmap=cmap)
+        self.graph.set_data(self.pattern)
+        # FIXME: Add color change
         self.fig.canvas.draw_idle()
         print("chart preview updated")
 
@@ -353,6 +370,9 @@ class PlotCanvas(FigureCanvas):
         self.pattern = CreatePointsPattern(
             1920, 1080, self.points_x, self.points_y, self.offset_x, self.offset_y, self.point_diameter, "circle")
         SetPattern(self.pattern, self.point_color)
+
+    def onClick(self, event):
+        print("Clicked on: " + str([int(event.xdata), int(event.ydata)]))
 
 
 if __name__ == '__main__':
