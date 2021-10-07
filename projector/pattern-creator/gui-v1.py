@@ -13,6 +13,9 @@ import matplotlib.colors
 import pycrafter6500 as projector
 import numpy as np
 
+import scipy.misc
+from skimage.draw import line_aa
+
 
 # Returns a numpy array of size diameter x diameter with a circle mask
 # For example, CreateCircleArray(5) returns:
@@ -45,24 +48,32 @@ def CreatePointsPattern(resolution_x=1920, resolution_y=1080,
     # Fill with zeros
     pattern = np.zeros((resolution_y, resolution_x)).astype(np.uint8)
 
+    # Create point array
+    if point_shape == "square":
+        point = np.ones((point_diameter, point_diameter))
+        point = point.astype(np.uint8)
+    elif point_shape == "circle":
+        point = CreateCircleArray(point_diameter)
+
     # Mask with points
     for i in range(resolution_y):
-        for j in range(resolution_x):
-            if (i - offset_y) % distance_y == 0 and (j - offset_x) % distance_x == 0:
-                # Create point array
-                if point_shape == "square":
-                    point = np.ones((point_diameter, point_diameter))
-                    point = point.astype(np.uint8)
-                elif point_shape == "circle":
-                    point = CreateCircleArray(point_diameter)
-                # Replace with point array
-                try:
-                    pattern[i: i + point_diameter,
-                            j: j + point_diameter] = point
-                except:
-                    offbound_points_flag = True
+        if (i - offset_y) % distance_y == 0:
+            for j in range(resolution_x):
+                if (j - offset_x) % distance_x == 0:
+                    # Replace with point array
+                    try:
+                        pattern[i: i + point_diameter,
+                                j: j + point_diameter] = point
+                    except:
+                        offbound_points_flag = True
 
     return pattern
+
+
+def DrawLine(pattern, start, end):
+    rr, cc, val = line_aa(start[0], start[1], end[0], end[1])
+    print(val)
+    pattern[rr, cc] = val
 
 
 # Convert color to rgb
@@ -235,6 +246,7 @@ class App(TabWidget):
         offset_x_input.move(160 + 133 * 2, 430)
         offset_x_input.resize(100, 30)
         offset_x_input.setValue(0)
+        offset_x_input.setRange(0, 1000)
         offset_x_input.valueChanged.connect(self.changeOffsetX)
 
         # Offset y label
@@ -248,6 +260,7 @@ class App(TabWidget):
         offset_y_input.move(160 + 133 * 3, 430)
         offset_y_input.resize(100, 30)
         offset_y_input.setValue(0)
+        offset_y_input.setRange(0, 1000)
         offset_y_input.valueChanged.connect(self.changeOffsetY)
 
         # Color selection label
@@ -280,13 +293,6 @@ class App(TabWidget):
         diameter_input.setValue(50)
         diameter_input.valueChanged.connect(self.pointDiameterChange)
 
-        # Preview pattern
-        button_preview = QPushButton('Update Preview', self)
-        button_preview.clicked.connect(self.m.updateChart)
-        button_preview.setToolTip('Preview pattern')
-        button_preview.move(160 + 133 * 2, 500)
-        button_preview.resize(100, 30)
-
         # Send pattern to the projector when the button is clicked
         button = QPushButton('Set Pattern', self)
         button.clicked.connect(self.m.setPattern)
@@ -298,21 +304,30 @@ class App(TabWidget):
 
     def colorChange(self, color):
         self.m.point_color = color
+        cmap = matplotlib.colors.ListedColormap(
+            ['white', to_rgb[self.m.point_color]])
+        self.m.graph.set_cmap(cmap)
+        self.m.fig.canvas.draw()
 
     def pointDiameterChange(self, value):
         self.m.point_diameter = value
+        self.m.updateChart()
 
     def changeNumPointsX(self, value):
         self.m.points_x = value
+        self.m.updateChart()
 
     def changeNumPointsY(self, value):
         self.m.points_y = value
+        self.m.updateChart()
 
     def changeOffsetX(self, value):
         self.m.offset_x = value
+        self.m.updateChart()
 
     def changeOffsetY(self, value):
         self.m.offset_y = value
+        self.m.updateChart()
 
 
 class PlotCanvas(FigureCanvas):
@@ -357,14 +372,10 @@ class PlotCanvas(FigureCanvas):
         self.draw()
 
     def updateChart(self):
-        cmap = matplotlib.colors.ListedColormap(
-            ['white', to_rgb[self.point_color]])
         self.pattern = CreatePointsPattern(
             1920, 1080, self.points_x, self.points_y, self.offset_x, self.offset_y, self.point_diameter, "circle")
         self.graph.set_data(self.pattern)
-        # FIXME: Add color change
-        self.fig.canvas.draw_idle()
-        print("chart preview updated")
+        self.fig.canvas.draw()
 
     def setPattern(self):
         self.pattern = CreatePointsPattern(
