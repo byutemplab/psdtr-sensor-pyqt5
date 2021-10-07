@@ -16,6 +16,9 @@ import numpy as np
 import scipy.misc
 from skimage.draw import line_aa
 
+RES_Y = 1920
+RES_X = 1080
+
 
 # Returns a numpy array of size diameter x diameter with a circle mask
 # For example, CreateCircleArray(5) returns:
@@ -35,7 +38,7 @@ def CreateCircleArray(diameter):
     return mask.astype(np.uint8)
 
 
-def CreatePointsPattern(resolution_x=1920, resolution_y=1080,
+def CreatePointsPattern(resolution_x=RES_Y, resolution_y=RES_X,
                         num_points_x=10,   num_points_y=10,
                         offset_x=0,        offset_y=0,
                         point_diameter=10, point_shape="circle"):
@@ -72,8 +75,9 @@ def CreatePointsPattern(resolution_x=1920, resolution_y=1080,
 
 def DrawLine(pattern, start, end):
     rr, cc, val = line_aa(start[0], start[1], end[0], end[1])
-    print(val)
-    pattern[rr, cc] = val
+    pattern[rr, cc] = 1
+
+    return pattern
 
 
 # Convert color to rgb
@@ -91,20 +95,31 @@ to_rgb = {
 
 def SetPattern(pattern, color):
 
-    # Append pattern to image array
-    images = []
-    images.append(pattern)
+    # If not connected, try to connect
+    if (dlp.connected == False):
+        dlp.TryConnection()
 
-    # Set secondary parameters
-    exposure = [0]*30
-    dark_time = [0]*30
-    trigger_in = [False]*30
-    trigger_out = [1]*30
+    try:
+        dlp.stopsequence()
+        dlp.changemode(3)
 
-    # Start sequence
-    dlp.defsequence(images, color, exposure, trigger_in,
-                    dark_time, trigger_out, 0)
-    dlp.startsequence()
+        # Append pattern to image array
+        images = []
+        images.append(pattern)
+
+        # Set secondary parameters
+        exposure = [0]*30
+        dark_time = [0]*30
+        trigger_in = [False]*30
+        trigger_out = [1]*30
+
+        # Start sequence
+        dlp.defsequence(images, color, exposure, trigger_in,
+                        dark_time, trigger_out, 0)
+        dlp.startsequence()
+    except:
+        dlp.connected = False
+        print("Projector not connected")
 
 
 class TabBar(QtWidgets.QTabBar):
@@ -355,7 +370,7 @@ class PlotCanvas(FigureCanvas):
 
         # Create pattern
         self.pattern = CreatePointsPattern(
-            1920, 1080, self.points_x, self.points_y, self.offset_x, self.offset_y, self.point_diameter, "circle")
+            RES_Y, RES_X, self.points_x, self.points_y, self.offset_x, self.offset_y, self.point_diameter, "circle")
         self.ax = self.figure.add_subplot(111)
 
         # Custom binary colormap dependant on point_color selection
@@ -366,35 +381,34 @@ class PlotCanvas(FigureCanvas):
         # Record coordinates when user clicks on the plot
         self.fig.canvas.mpl_connect('button_press_event', self.onClick)
 
+        # Hide axis ticks
         # self.ax.axes.xaxis.set_visible(False)
         # self.ax.axes.yaxis.set_visible(False)
         # self.ax.grid(True)
+
         self.draw()
 
     def updateChart(self):
         self.pattern = CreatePointsPattern(
-            1920, 1080, self.points_x, self.points_y, self.offset_x, self.offset_y, self.point_diameter, "circle")
+            RES_Y, RES_X, self.points_x, self.points_y, self.offset_x, self.offset_y, self.point_diameter, "circle")
         self.graph.set_data(self.pattern)
         self.fig.canvas.draw()
 
     def setPattern(self):
-        self.pattern = CreatePointsPattern(
-            1920, 1080, self.points_x, self.points_y, self.offset_x, self.offset_y, self.point_diameter, "circle")
         SetPattern(self.pattern, self.point_color)
 
     def onClick(self, event):
-        print("Clicked on: " + str([int(event.xdata), int(event.ydata)]))
+        print([int(event.xdata), int(event.ydata)])
+        self.pattern = DrawLine(self.pattern, [0, 0], [
+                                int(event.ydata), int(event.xdata)])
+        self.graph.set_data(self.pattern)
+        self.fig.canvas.draw()
 
 
 if __name__ == '__main__':
 
-    # Inititalize dmd in mode 3 (intentity visualizer)
-    try:
-        dlp = projector.dmd()
-        dlp.stopsequence()
-        dlp.changemode(3)
-    except:
-        print("Projector not connected")
+    # Inititalize dmd
+    dlp = projector.dmd()
 
     # Start GUI
     app = QApplication(sys.argv)

@@ -37,11 +37,16 @@ def bitstobytes(a):
 
 class dmd():
     def __init__(self):
-        self.dev = usb.core.find(idVendor=0x0451, idProduct=0xc900)
+        self.TryConnection()
 
-        self.dev.set_configuration()
-
-        self.ans = []
+    def TryConnection(self):
+        try:
+            self.dev = usb.core.find(idVendor=0x0451, idProduct=0xc900)
+            self.dev.set_configuration()
+            self.ans = []
+            self.connected = True
+        except:
+            self.connected = False
 
 # standard usb command function
 

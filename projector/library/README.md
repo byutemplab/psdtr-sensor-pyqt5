@@ -31,6 +31,7 @@ Compatible with Python 2 and Python 3. Tested in Windows 10.
 
 import pycrafter6500
 controller=pycrafter6500.dmd()
+controller.TryConnection()
 
 #### To set the DMD to idle mode
 
