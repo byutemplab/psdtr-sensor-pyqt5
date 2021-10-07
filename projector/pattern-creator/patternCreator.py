@@ -82,22 +82,27 @@ def SetPattern(pattern, color):
 
     # Inititalize dmd in mode 3 (intentity visualizer)
     dlp = projector.dmd()
+    dlp.TryConnection()
     dlp.stopsequence()
     dlp.changemode(3)
 
     # Append pattern to image array
     images = []
-    images.append(pattern)
+    images.append(CreatePointsPattern(
+        1920, 1080, 2, 2, 0, 0, 80, "circle"))
+    images.append(CreatePointsPattern(
+        1920, 1080, 2, 2, 500, 0, 80, "circle"))
 
     # Set secondary parameters
-    exposure = [0]*30
-    dark_time = [0]*30
-    trigger_in = [False]*30
-    trigger_out = [1]*30
+    exposure = [1000000, 1000000]
+    dark_time = [0]*2
+    trigger_in = [0]*2
+    trigger_out = [0]*2
+    repetitions = 0  # Repeats infinitely
 
     # Start sequence
     dlp.defsequence(images, color, exposure, trigger_in,
-                    dark_time, trigger_out, 0)
+                    dark_time, trigger_out, repetitions)
     dlp.startsequence()
 
 

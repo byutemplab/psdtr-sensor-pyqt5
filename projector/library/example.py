@@ -9,6 +9,7 @@ images.append(pattern_1)
 
 # Inititalize dmd
 dlp = pycrafter6500.dmd()
+dlp.TryConnection()
 dlp.stopsequence()
 dlp.changemode(3)
 

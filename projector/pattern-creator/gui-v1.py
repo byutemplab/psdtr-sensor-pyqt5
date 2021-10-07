@@ -320,7 +320,7 @@ class App(TabWidget):
     def colorChange(self, color):
         self.m.point_color = color
         cmap = matplotlib.colors.ListedColormap(
-            ['white', to_rgb[self.m.point_color]])
+            ['none', to_rgb[self.m.point_color]])
         self.m.graph.set_cmap(cmap)
         self.m.fig.canvas.draw()
 
@@ -368,14 +368,21 @@ class PlotCanvas(FigureCanvas):
         self.offset_x = 0
         self.offset_y = 0
 
+        # Initialize axes
+        self.ax = self.figure.add_subplot(111)
+
+        # Import grain boundary sample image and set as background
+        # Resize to projector resolution (1920x1080)
+        self.image = plt.imread("grain-boundaries/sample.png")
+        self.ax.imshow(self.image, alpha=0.5, extent=[0, RES_Y, 0, RES_X])
+
         # Create pattern
         self.pattern = CreatePointsPattern(
             RES_Y, RES_X, self.points_x, self.points_y, self.offset_x, self.offset_y, self.point_diameter, "circle")
-        self.ax = self.figure.add_subplot(111)
 
         # Custom binary colormap dependant on point_color selection
         cmap = matplotlib.colors.ListedColormap(
-            ['white', to_rgb[self.point_color]])
+            ['none', to_rgb[self.point_color]])
         self.graph = self.ax.imshow(self.pattern, cmap=cmap)
 
         # Record coordinates when user clicks on the plot

@@ -78,8 +78,8 @@ controller.defsequence(images, color, exposures, trigger in, dark time, trigger 
 
 - images: python list of numpy arrays, with size (1080,1920), dtype uint8, and filled with binary values (1 and 0 only)
 - color: string for the RGB color --> options: disabled (off), red, green, blue, white.
-- exposures: python list or numpy array with the exposure times in microseconds of each image. Length must be equal to the images list.
+- exposures: python list or numpy array with the exposure times in microseconds (1e-6) of each image. Length must be equal to the images list.
 - trigger in: python list or numpy array of boolean values determing wheter to wait for an external trigger before exposure. Length must be equal to the images list.
-- dark time: python list or numpy array with the dark times in microseconds after each image. Length must be equal to the images list.
+- dark time: python list or numpy array with the dark times in microseconds (1e-6) after each image. Length must be equal to the images list.
 - trigger out: python list or numpy array of boolean values determing wheter to emit an external trigger after exposure. Length must be equal to the images list.
 - repetitions: number of repetitions of the sequence. set to 0 for infinite loop.
