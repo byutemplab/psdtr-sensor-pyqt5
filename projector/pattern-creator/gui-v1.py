@@ -34,24 +34,26 @@ def CreatePointsPattern(resolution_x=RES_Y, resolution_y=RES_X,
     pattern = np.zeros((resolution_y, resolution_x)).astype(np.uint8)
 
     # Mask with points
-    for i in range(resolution_y):
-        if (i - offset_y) % distance_y == 0:
-            for j in range(resolution_x):
-                if (j - offset_x) % distance_x == 0:
-                    try:
-                        # Paint point with given diameter
-                        if point_shape == "square":
-                            start = (i - int(point_diameter/2),
-                                     j - int(point_diameter/2))
-                            end = (i + int(point_diameter/2),
-                                   j + int(point_diameter/2))
-                            rr, cc = rectangle(start, end)
-                            pattern[rr, cc] = 1
-                        elif point_shape == "circle":
-                            rr, cc = disk((i, j), point_diameter)
-                            pattern[rr, cc] = 1
-                    except:
-                        offbound_points_flag = True
+    for i in range(num_points_y):
+        # Calculate which row we're at
+        row = int(i * (resolution_y - 1) / num_points_y) + offset_y
+        for j in range(num_points_x):
+            # Calculate which row we're at
+            col = int(j * (resolution_x - 1) / num_points_x) + offset_x
+            try:
+                # Paint point with given diameter
+                if point_shape == "square":
+                    start = (row - int(point_diameter/2),
+                             col - int(point_diameter/2))
+                    end = (row + int(point_diameter/2),
+                           col + int(point_diameter/2))
+                    rr, cc = rectangle(start, end)
+                    pattern[rr, cc] = 1
+                elif point_shape == "circle":
+                    rr, cc = disk((row, col), point_diameter)
+                    pattern[rr, cc] = 1
+            except:
+                offbound_points_flag = True
 
     return pattern
 
@@ -238,6 +240,7 @@ class App(TabWidget):
         points_x_input.move(160, 430)
         points_x_input.resize(100, 30)
         points_x_input.setValue(self.m.points_x)
+        points_x_input.setRange(1, 1000)
         points_x_input.valueChanged.connect(self.changeNumPointsX)
 
         # Number points y label
@@ -251,6 +254,7 @@ class App(TabWidget):
         points_y_input.move(160 + 133, 430)
         points_y_input.resize(100, 30)
         points_y_input.setValue(self.m.points_y)
+        points_y_input.setRange(1, 1000)
         points_y_input.valueChanged.connect(self.changeNumPointsY)
 
         # Offset x label
@@ -381,7 +385,7 @@ class PlotCanvas(FigureCanvas):
 
         # Create pattern
         self.pattern = CreatePointsPattern(
-            RES_Y, RES_X, self.points_x, self.points_y, self.offset_x, self.offset_y, self.point_diameter, "square")
+            RES_Y, RES_X, self.points_x, self.points_y, self.offset_x, self.offset_y, self.point_diameter, "circle")
 
         # Custom binary colormap dependant on point_color selection
         cmap = matplotlib.colors.ListedColormap(
@@ -400,7 +404,7 @@ class PlotCanvas(FigureCanvas):
 
     def updateChart(self):
         self.pattern = CreatePointsPattern(
-            RES_Y, RES_X, self.points_x, self.points_y, self.offset_x, self.offset_y, self.point_diameter, "square")
+            RES_Y, RES_X, self.points_x, self.points_y, self.offset_x, self.offset_y, self.point_diameter, "circle")
         self.graph.set_data(self.pattern)
         self.fig.canvas.draw()
 
