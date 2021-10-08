@@ -14,34 +14,16 @@ import pycrafter6500 as projector
 import numpy as np
 
 import scipy.misc
-from skimage.draw import line_aa
+from skimage.draw import line, disk, rectangle
 
 RES_Y = 1920
 RES_X = 1080
 
 
-# Returns a numpy array of size diameter x diameter with a circle mask
-# For example, CreateCircleArray(5) returns:
-# [[0 0 1 0 0]
-#  [0 1 1 1 0]
-#  [1 1 1 1 1]
-#  [0 1 1 1 0]
-#  [0 0 1 0 0]]
-
-
-def CreateCircleArray(diameter):
-    Y, X = np.ogrid[:diameter, :diameter]
-    dist_from_center = np.sqrt((X - int(diameter / 2))**2
-                               + (Y - int(diameter / 2))**2)
-    mask = dist_from_center <= int(diameter / 2)
-
-    return mask.astype(np.uint8)
-
-
 def CreatePointsPattern(resolution_x=RES_Y, resolution_y=RES_X,
-                        num_points_x=10,   num_points_y=10,
-                        offset_x=0,        offset_y=0,
-                        point_diameter=10, point_shape="circle"):
+                        num_points_x=10,    num_points_y=10,
+                        offset_x=0,         offset_y=0,
+                        point_diameter=10,  point_shape="circle"):
 
     # Parameters for the pattern
     distance_x = int(resolution_x / num_points_x)
@@ -51,22 +33,23 @@ def CreatePointsPattern(resolution_x=RES_Y, resolution_y=RES_X,
     # Fill with zeros
     pattern = np.zeros((resolution_y, resolution_x)).astype(np.uint8)
 
-    # Create point array
-    if point_shape == "square":
-        point = np.ones((point_diameter, point_diameter))
-        point = point.astype(np.uint8)
-    elif point_shape == "circle":
-        point = CreateCircleArray(point_diameter)
-
     # Mask with points
     for i in range(resolution_y):
         if (i - offset_y) % distance_y == 0:
             for j in range(resolution_x):
                 if (j - offset_x) % distance_x == 0:
-                    # Replace with point array
                     try:
-                        pattern[i: i + point_diameter,
-                                j: j + point_diameter] = point
+                        # Paint point with given diameter
+                        if point_shape == "square":
+                            start = (i - int(point_diameter/2),
+                                     j - int(point_diameter/2))
+                            end = (i + int(point_diameter/2),
+                                   j + int(point_diameter/2))
+                            rr, cc = rectangle(start, end)
+                            pattern[rr, cc] = 1
+                        elif point_shape == "circle":
+                            rr, cc = disk((i, j), point_diameter)
+                            pattern[rr, cc] = 1
                     except:
                         offbound_points_flag = True
 
@@ -74,8 +57,10 @@ def CreatePointsPattern(resolution_x=RES_Y, resolution_y=RES_X,
 
 
 def DrawLine(pattern, start, end):
-    rr, cc, val = line_aa(start[0], start[1], end[0], end[1])
+    rr, cc = line(start[0], start[1], end[0], end[1])
     pattern[rr, cc] = 1
+    print(rr)
+    print(cc)
 
     return pattern
 
@@ -91,6 +76,32 @@ to_rgb = {
     'cyan':     '#00ffff',
     'white':    '#9ae2f4',  # slightly blue to differentiate from white background
 }
+
+
+def SetPatternSequence(array, color, exposure):
+
+    # If not connected, try to connect
+    if (dlp.connected == False):
+        dlp.TryConnection()
+
+    try:
+        dlp.stopsequence()
+        dlp.changemode(3)
+
+        # Set secondary parameters
+        exposure = [exposure]*len(array)
+        dark_time = [0]*len(array)
+        trigger_in = [0]*len(array)
+        trigger_out = [0]*len(array)
+        repetitions = 0  # infinite loop
+
+        # Start sequence
+        dlp.defsequence(array, color, exposure, trigger_in,
+                        dark_time, trigger_out, repetitions)
+        dlp.startsequence()
+    except:
+        dlp.connected = False
+        print("Projector not connected")
 
 
 def SetPattern(pattern, color):
@@ -197,18 +208,10 @@ class App(TabWidget):
         # Tab header
         font = QtGui.QFont()
         font.setPointSize(20)
-        self.header = QtWidgets.QLabel(self)
-        self.header.setFont(font)
-        self.header.setText("Projector Settings")
-        self.header.move(160, 20)
-
-        # Connection status
-        font = QtGui.QFont()
-        font.setPointSize(20)
-        self.header = QtWidgets.QLabel(self)
-        self.header.setFont(font)
-        self.header.setText("Projector Settings")
-        self.header.move(160, 20)
+        self.projector_tab.header = QtWidgets.QLabel(self)
+        self.projector_tab.header.setFont(font)
+        self.projector_tab.header.setText("Projector Settings")
+        self.projector_tab.header.move(160, 20)
 
         # Pattern preview from matplotlib
         self.m = PlotCanvas(self, width=5, height=3)
@@ -234,7 +237,7 @@ class App(TabWidget):
         points_x_input = QSpinBox(self)
         points_x_input.move(160, 430)
         points_x_input.resize(100, 30)
-        points_x_input.setValue(4)
+        points_x_input.setValue(self.m.points_x)
         points_x_input.valueChanged.connect(self.changeNumPointsX)
 
         # Number points y label
@@ -247,7 +250,7 @@ class App(TabWidget):
         points_y_input = QSpinBox(self)
         points_y_input.move(160 + 133, 430)
         points_y_input.resize(100, 30)
-        points_y_input.setValue(4)
+        points_y_input.setValue(self.m.points_y)
         points_y_input.valueChanged.connect(self.changeNumPointsY)
 
         # Offset x label
@@ -305,7 +308,7 @@ class App(TabWidget):
         diameter_input.move(160 + 133, 500)
         diameter_input.resize(100, 30)
         diameter_input.setRange(1, 1000)
-        diameter_input.setValue(50)
+        diameter_input.setValue(self.m.point_diameter)
         diameter_input.valueChanged.connect(self.pointDiameterChange)
 
         # Send pattern to the projector when the button is clicked
@@ -362,9 +365,9 @@ class PlotCanvas(FigureCanvas):
     def plot(self):
         # Set initial parameters
         self.point_color = "green"
-        self.point_diameter = 50
-        self.points_x = 4
-        self.points_y = 4
+        self.point_diameter = 25
+        self.points_x = 10
+        self.points_y = 10
         self.offset_x = 0
         self.offset_y = 0
 
@@ -378,7 +381,7 @@ class PlotCanvas(FigureCanvas):
 
         # Create pattern
         self.pattern = CreatePointsPattern(
-            RES_Y, RES_X, self.points_x, self.points_y, self.offset_x, self.offset_y, self.point_diameter, "circle")
+            RES_Y, RES_X, self.points_x, self.points_y, self.offset_x, self.offset_y, self.point_diameter, "square")
 
         # Custom binary colormap dependant on point_color selection
         cmap = matplotlib.colors.ListedColormap(
@@ -397,7 +400,7 @@ class PlotCanvas(FigureCanvas):
 
     def updateChart(self):
         self.pattern = CreatePointsPattern(
-            RES_Y, RES_X, self.points_x, self.points_y, self.offset_x, self.offset_y, self.point_diameter, "circle")
+            RES_Y, RES_X, self.points_x, self.points_y, self.offset_x, self.offset_y, self.point_diameter, "square")
         self.graph.set_data(self.pattern)
         self.fig.canvas.draw()
 
@@ -406,7 +409,7 @@ class PlotCanvas(FigureCanvas):
 
     def onClick(self, event):
         print([int(event.xdata), int(event.ydata)])
-        self.pattern = DrawLine(self.pattern, [0, 0], [
+        self.pattern = DrawLine(self.pattern, [100, 100], [
                                 int(event.ydata), int(event.xdata)])
         self.graph.set_data(self.pattern)
         self.fig.canvas.draw()
