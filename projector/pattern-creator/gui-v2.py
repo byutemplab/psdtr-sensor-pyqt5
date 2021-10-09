@@ -430,7 +430,7 @@ class PlotCanvas(FigureCanvas):
         for idx, trajectory in enumerate(self.trajectories_list):
             name = "T" + str(idx + 1)
             a = self.ax.annotate(name, xy=(trajectory['end'][1], trajectory['end'][0]), xytext=(trajectory['start'][1], trajectory['start'][0]),
-                                 arrowprops=dict(arrowstyle="->"))
+                                 arrowprops=dict(arrowstyle="-|>", lw=1.5))
             self.annotations_list.append(a)
 
         self.draw()
