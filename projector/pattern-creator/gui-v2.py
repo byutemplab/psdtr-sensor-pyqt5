@@ -155,7 +155,7 @@ class App(TabWidget):
         font.setPointSize(20)
         self.projector_tab.header = QtWidgets.QLabel(self)
         self.projector_tab.header.setFont(font)
-        self.projector_tab.header.setText("Projector Settings - v2")
+        self.projector_tab.header.setText("Projector Settings")
         self.projector_tab.header.move(160, 20)
 
         # Pattern preview from matplotlib
@@ -171,12 +171,12 @@ class App(TabWidget):
 
         # Set font for all small headers
         font = QtGui.QFont()
-        font.setPointSize(10)
+        font.setPointSize(8)
 
         # Number of measurements label
         self.header = QtWidgets.QLabel(self)
         self.header.setFont(font)
-        self.header.setText("# measurements")
+        self.header.setText("# Measurements")
         self.header.move(160, 410)
 
         # Number of measurements
@@ -190,7 +190,7 @@ class App(TabWidget):
         # Point diameter label
         self.header = QtWidgets.QLabel(self)
         self.header.setFont(font)
-        self.header.setText("Point diameter")
+        self.header.setText("Point Diameter")
         self.header.move(160 + 133, 410)
 
         # Point diameter
@@ -204,7 +204,7 @@ class App(TabWidget):
         # Exposure time label
         self.header = QtWidgets.QLabel(self)
         self.header.setFont(font)
-        self.header.setText("Exposure time")
+        self.header.setText("Exposure Time")
         self.header.move(160 + 133 * 2, 410)
 
         # Exposure time label
@@ -223,40 +223,42 @@ class App(TabWidget):
         self.preview_btn.move(160 + 133 * 3, 430)
         self.preview_btn.resize(100, 30)
 
-        # Point selection label
+        # Trajectory selection label
         self.header = QtWidgets.QLabel(self)
         self.header.setFont(font)
-        self.header.setText("Point selection")
+        self.header.setText("Pattern Array")
         self.header.move(160, 480)
 
-        # Point selection
-        self.point_selection = QComboBox(self)
-        self.point_selection.move(160, 500)
-        self.point_selection.resize(100, 30)
-        self.point_selection.activated[str].connect(self.ChangePointSelection)
+        # Trajectory selection
+        self.trajectory_selection = QComboBox(self)
+        self.trajectory_selection.move(160, 500)
+        self.trajectory_selection.resize(100, 30)
+        self.trajectory_selection.activated[str].connect(
+            self.ChangeTrajectorySelection)
 
-        # New point label
+        # New trajectory label
         self.header = QtWidgets.QLabel(self)
         self.header.setFont(font)
-        self.header.setText("Add new point")
+        self.header.setText("New Trajectory")
         self.header.move(160 + 133, 480)
 
-        # New point button
-        self.new_point_btn = QPushButton('+', self)
-        self.new_point_btn.clicked.connect(self.AddNewPoint)
-        self.new_point_btn.setToolTip('Add new point to the array')
-        self.new_point_btn.move(160 + 133, 500)
-        self.new_point_btn.resize(100, 30)
+        # New trajectory button
+        self.new_trajectory_btn = QPushButton('+', self)
+        self.new_trajectory_btn.clicked.connect(self.AddNewTrajectory)
+        self.new_trajectory_btn.setToolTip('Add new trajectory to the array')
+        self.new_trajectory_btn.move(160 + 133, 500)
+        self.new_trajectory_btn.resize(100, 30)
 
         # Select start point label
         self.header = QtWidgets.QLabel(self)
         self.header.setFont(font)
-        self.header.setText("Start point")
+        self.header.setText("Starting Point")
         self.header.move(160 + 133 * 2, 480)
 
         # Select start point
         self.start_point_btn = QPushButton('Select', self)
         self.start_point_btn.setCheckable(True)
+        self.start_point_btn.clicked.connect(self.ClickedStartPointBtn)
         self.start_point_btn.setToolTip(
             'Select start point for the trajectory')
         self.start_point_btn.move(160 + 133 * 2, 500)
@@ -265,17 +267,26 @@ class App(TabWidget):
         # Select end point label
         self.header = QtWidgets.QLabel(self)
         self.header.setFont(font)
-        self.header.setText("End point")
+        self.header.setText("Ending Point")
         self.header.move(160 + 133 * 3, 480)
 
         # Select end point
         self.end_point_btn = QPushButton('Select', self)
         self.end_point_btn.setCheckable(True)
+        self.end_point_btn.clicked.connect(self.ClickedEndPointBtn)
         self.end_point_btn.setToolTip('Select end point for the trajectory')
         self.end_point_btn.move(160 + 133 * 3, 500)
         self.end_point_btn.resize(100, 30)
 
         self.show()
+
+    def ClickedStartPointBtn(self):
+        if(self.end_point_btn.isChecked()):
+            self.end_point_btn.toggle()
+
+    def ClickedEndPointBtn(self):
+        if(self.start_point_btn.isChecked()):
+            self.start_point_btn.toggle()
 
     def ChangeNumMeasurements(self, value):
         self.m.num_measurements = value
@@ -286,17 +297,20 @@ class App(TabWidget):
     def ChangeExposure(self, value):
         self.m.exposure = value
 
-    def ChangePointSelection(self, value):
-        # Get index of selected point
-        self.m.selected_point_idx = int(value.split(" ")[1]) - 1
+    def ChangeTrajectorySelection(self, value):
+        # Get index of selected trajectory
+        self.m.selected_trajectory_idx = int(value.split(" ")[1]) - 1
 
-    def AddNewPoint(self, value):
+    def AddNewTrajectory(self, value):
         self.m.trajectories_list.append({'start': (0, 0), 'end': (0, 0)})
-        num_point = len(self.m.trajectories_list)
-        newItem = "Point " + str(num_point)
-        self.point_selection.addItem(newItem)
-        self.point_selection.setCurrentText(newItem)
-        self.m.selected_point_idx = num_point - 1  # Conversion to 0-index
+        num_trajectory = len(self.m.trajectories_list)
+        newItem = "Trajectory " + str(num_trajectory)
+        self.trajectory_selection.addItem(newItem)
+        self.trajectory_selection.setCurrentText(newItem)
+        self.m.selected_trajectory_idx = num_trajectory - 1  # Conversion to 0-index
+        # Toggle on starting point selection button
+        if(self.start_point_btn.isChecked() == False):
+            self.start_point_btn.toggle()
 
 
 class PlotCanvas(FigureCanvas):
@@ -318,10 +332,10 @@ class PlotCanvas(FigureCanvas):
         # Set initial parameters
         self.num_measurements = 10
         self.point_diameter = 20
-        self.exposure = 500  # in milliseconds
+        self.exposure = 50  # in milliseconds
         self.frames_array = []
         self.trajectories_list = []
-        self.selected_point_idx = 0
+        self.selected_trajectory_idx = 0
 
         # Initialize axes
         self.ax = self.figure.add_subplot(111)
@@ -376,12 +390,12 @@ class PlotCanvas(FigureCanvas):
         if (self.parent.start_point_btn.isChecked()):
             # Set starting point for trajectory
             coord = (int(event.ydata), int(event.xdata))
-            self.trajectories_list[self.selected_point_idx]['start'] = coord
+            self.trajectories_list[self.selected_trajectory_idx]['start'] = coord
             self.parent.start_point_btn.toggle()
         elif (self.parent.end_point_btn.isChecked()):
             # Set ending point for trajectory
             coord = (int(event.ydata), int(event.xdata))
-            self.trajectories_list[self.selected_point_idx]['end'] = coord
+            self.trajectories_list[self.selected_trajectory_idx]['end'] = coord
             self.parent.end_point_btn.toggle()
 
         print(self.trajectories_list)
