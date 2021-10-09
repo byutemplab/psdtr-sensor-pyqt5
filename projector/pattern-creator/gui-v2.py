@@ -308,6 +308,7 @@ class App(TabWidget):
         self.trajectory_selection.addItem(newItem)
         self.trajectory_selection.setCurrentText(newItem)
         self.m.selected_trajectory_idx = num_trajectory - 1  # Conversion to 0-index
+
         # Toggle on starting point selection button
         if(self.start_point_btn.isChecked() == False):
             self.start_point_btn.toggle()
@@ -336,6 +337,7 @@ class PlotCanvas(FigureCanvas):
         self.frames_array = []
         self.trajectories_list = []
         self.selected_trajectory_idx = 0
+        self.annotations_list = []
 
         # Initialize axes
         self.ax = self.figure.add_subplot(111)
@@ -358,11 +360,12 @@ class PlotCanvas(FigureCanvas):
     def PreviewAnimation(self, value):
         if(self.parent.preview_btn.isChecked() == True):
             self.UpdateFrames()
+            self.RemoveTrajectories()
 
             # Custom binary colormap dependant on point_color selection
             cmap = matplotlib.colors.ListedColormap(['none', '#00ff00'])
 
-            # Start with empty array
+            # Start with first frame
             self.graph = self.ax.imshow(self.frames_array[0], cmap=cmap)
 
             # Superpose background to hide initial frame
@@ -379,10 +382,15 @@ class PlotCanvas(FigureCanvas):
             self.animation = animation.FuncAnimation(
                 self.fig, updatefig, interval=self.exposure, blit=True)
 
-            self.show()
+            self.draw()
         else:
             try:
+                # Pause animation
                 self.animation.pause()
+
+                # Superpose background to hide initial frame and show trajectories again
+                self.ax.imshow(self.image, extent=[0, RES_Y, RES_X, 0])
+                self.ShowTrajectories()
             except:
                 print("no animation yet")
 
@@ -391,14 +399,46 @@ class PlotCanvas(FigureCanvas):
             # Set starting point for trajectory
             coord = (int(event.ydata), int(event.xdata))
             self.trajectories_list[self.selected_trajectory_idx]['start'] = coord
+
+            # If end point was not set already, set to same coords as start point
+            if(self.trajectories_list[self.selected_trajectory_idx]['end'] == (0, 0)):
+                self.trajectories_list[self.selected_trajectory_idx]['end'] = coord
+
+            # Toggle button back off
             self.parent.start_point_btn.toggle()
+
         elif (self.parent.end_point_btn.isChecked()):
             # Set ending point for trajectory
             coord = (int(event.ydata), int(event.xdata))
             self.trajectories_list[self.selected_trajectory_idx]['end'] = coord
+
+            # If start point was not set already, set to same coords as end point
+            if(self.trajectories_list[self.selected_trajectory_idx]['start'] == (0, 0)):
+                self.trajectories_list[self.selected_trajectory_idx]['start'] = coord
+
+            # Toggle button back off
             self.parent.end_point_btn.toggle()
 
+        # Show in terminal
         print(self.trajectories_list)
+
+        # Show in graph
+        self.ShowTrajectories()
+
+    def ShowTrajectories(self):
+        self.RemoveTrajectories()
+        for idx, trajectory in enumerate(self.trajectories_list):
+            name = "T" + str(idx + 1)
+            a = self.ax.annotate(name, xy=(trajectory['end'][1], trajectory['end'][0]), xytext=(trajectory['start'][1], trajectory['start'][0]),
+                                 arrowprops=dict(arrowstyle="->"))
+            self.annotations_list.append(a)
+
+        self.draw()
+
+    def RemoveTrajectories(self):
+        for annotation in self.annotations_list:
+            annotation.remove()
+        self.annotations_list = []
 
 
 if __name__ == '__main__':
