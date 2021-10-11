@@ -132,10 +132,10 @@ class App(TabWidget):
     def __init__(self):
         super().__init__()
         self.left = 340
-        self.top = 80
+        self.top = 40
         self.title = 'TEMPLAB MSR Sensor'
         self.width = 700
-        self.height = 600
+        self.height = 680
         self.initUI()
 
     def initUI(self):
@@ -279,6 +279,24 @@ class App(TabWidget):
         self.end_point_btn.move(160 + 133 * 3, 500)
         self.end_point_btn.resize(100, 30)
 
+        # Connection Status
+        self.connection_status = QtWidgets.QLabel(self)
+        self.connection_status.setFont(font)
+        self.connection_status.setText("Disconnected")
+        self.connection_status.move(160 + 133 * 2 + 30, 577)
+
+        # Check connection status every 2 seconds
+        self.check_connection_timer = QtCore.QTimer(self)
+        self.check_connection_timer.setInterval(2000)  # 2 seconds
+        self.check_connection_timer.timeout.connect(self.CheckConnection)
+
+        # Send pattern to projector
+        self.send_pattern_btn = QPushButton('Send Pattern', self)
+        self.send_pattern_btn.clicked.connect(self.SendPattern)
+        self.send_pattern_btn.setToolTip('Send pattern to projector')
+        self.send_pattern_btn.move(160 + 133 * 3, 570)
+        self.send_pattern_btn.resize(100, 30)
+
         self.show()
 
     def ClickedStartPointBtn(self):
@@ -314,10 +332,21 @@ class App(TabWidget):
         if(self.start_point_btn.isChecked() == False):
             self.start_point_btn.toggle()
 
+    def SendPattern(self):
+        print('Sending pattern to projector')
+        self.m.UpdateFrames()
+        SetPatternSequence(self.m.frames_array, 'green',
+                           self.m.exposure * 1000)
+
     def keyPressEvent(self, event):
         # On N key press, add new trajectory
         if event.key() == QtCore.Qt.Key_N:
             self.AddNewTrajectory()
+
+    def CheckConnection(self):
+        # If not connected, try to connect
+        if (dlp.connected == False):
+            dlp.TryConnection()
 
 
 class PlotCanvas(FigureCanvas):
