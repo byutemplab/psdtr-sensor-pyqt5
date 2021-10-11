@@ -245,7 +245,8 @@ class App(TabWidget):
         # New trajectory button
         self.new_trajectory_btn = QPushButton('+', self)
         self.new_trajectory_btn.clicked.connect(self.AddNewTrajectory)
-        self.new_trajectory_btn.setToolTip('Add new trajectory to the array')
+        self.new_trajectory_btn.setToolTip(
+            'Add new trajectory to the array (N)')
         self.new_trajectory_btn.move(160 + 133, 500)
         self.new_trajectory_btn.resize(100, 30)
 
@@ -301,7 +302,7 @@ class App(TabWidget):
         # Get index of selected trajectory
         self.m.selected_trajectory_idx = int(value.split(" ")[1]) - 1
 
-    def AddNewTrajectory(self, value):
+    def AddNewTrajectory(self):
         self.m.trajectories_list.append({'start': (0, 0), 'end': (0, 0)})
         num_trajectory = len(self.m.trajectories_list)
         newItem = "Trajectory " + str(num_trajectory)
@@ -312,6 +313,11 @@ class App(TabWidget):
         # Toggle on starting point selection button
         if(self.start_point_btn.isChecked() == False):
             self.start_point_btn.toggle()
+
+    def keyPressEvent(self, event):
+        # On N key press, add new trajectory
+        if event.key() == QtCore.Qt.Key_N:
+            self.AddNewTrajectory()
 
 
 class PlotCanvas(FigureCanvas):
@@ -400,12 +406,13 @@ class PlotCanvas(FigureCanvas):
             coord = (int(event.ydata), int(event.xdata))
             self.trajectories_list[self.selected_trajectory_idx]['start'] = coord
 
-            # If end point was not set already, set to same coords as start point
-            if(self.trajectories_list[self.selected_trajectory_idx]['end'] == (0, 0)):
-                self.trajectories_list[self.selected_trajectory_idx]['end'] = coord
-
             # Toggle button back off
             self.parent.start_point_btn.toggle()
+
+            # If end point was not set already, set to same coords as start point and toggle on end point selection
+            if(self.trajectories_list[self.selected_trajectory_idx]['end'] == (0, 0)):
+                self.trajectories_list[self.selected_trajectory_idx]['end'] = coord
+                self.parent.end_point_btn.toggle()
 
         elif (self.parent.end_point_btn.isChecked()):
             # Set ending point for trajectory
