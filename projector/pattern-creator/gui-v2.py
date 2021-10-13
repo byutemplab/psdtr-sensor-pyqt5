@@ -261,7 +261,7 @@ class App(TabWidget):
         self.start_point_btn.setCheckable(True)
         self.start_point_btn.clicked.connect(self.ClickedStartPointBtn)
         self.start_point_btn.setToolTip(
-            'Select start point for the trajectory')
+            'Select start point for the trajectory (S)')
         self.start_point_btn.move(160 + 133 * 2, 500)
         self.start_point_btn.resize(100, 30)
 
@@ -275,7 +275,8 @@ class App(TabWidget):
         self.end_point_btn = QPushButton('Select', self)
         self.end_point_btn.setCheckable(True)
         self.end_point_btn.clicked.connect(self.ClickedEndPointBtn)
-        self.end_point_btn.setToolTip('Select end point for the trajectory')
+        self.end_point_btn.setToolTip(
+            'Select end point for the trajectory (E)')
         self.end_point_btn.move(160 + 133 * 3, 500)
         self.end_point_btn.resize(100, 30)
 
@@ -288,7 +289,7 @@ class App(TabWidget):
         # Check connection status every 2 seconds
         self.check_connection_timer = QtCore.QTimer(self)
         self.check_connection_timer.setInterval(2000)  # 2 seconds
-        self.check_connection_timer.timeout.connect(self.CheckConnection)
+        self.check_connection_timer.timeout.connect(lambda: print("hey"))
 
         # Send pattern to projector
         self.send_pattern_btn = QPushButton('Send Pattern', self)
@@ -339,14 +340,24 @@ class App(TabWidget):
                            self.m.exposure * 1000)
 
     def keyPressEvent(self, event):
+        key = event.key()
         # On N key press, add new trajectory
-        if event.key() == QtCore.Qt.Key_N:
+        if key == QtCore.Qt.Key_N:
             self.AddNewTrajectory()
+
+        # On S key press, toggle start point button
+        if key == QtCore.Qt.Key_S:
+            self.start_point_btn.toggle()
+
+        # On E key press, toggle end point button
+        if key == QtCore.Qt.Key_E:
+            self.end_point_btn.toggle()
 
     def CheckConnection(self):
         # If not connected, try to connect
-        if (dlp.connected == False):
-            dlp.TryConnection()
+        # if (dlp.connected == False):
+        #     dlp.TryConnection()
+        print("yo, whats up")
 
 
 class PlotCanvas(FigureCanvas):
@@ -406,16 +417,18 @@ class PlotCanvas(FigureCanvas):
             # Superpose background to hide initial frame
             self.ax.imshow(self.image, extent=[0, RES_Y, RES_X, 0])
 
+            # Update graph with next frame
             self.frame_num = 0
 
-            def updatefig(*args):
-                self.frame_num += 1
+            def UpdateFig(*args):
                 self.graph.set_array(
                     self.frames_array[self.frame_num % self.num_measurements])
+                self.frame_num += 1
                 return self.graph,
 
+            # Set animation
             self.animation = animation.FuncAnimation(
-                self.fig, updatefig, interval=self.exposure, blit=True)
+                self.fig, UpdateFig, interval=self.exposure, blit=True)
 
             self.draw()
         else:
