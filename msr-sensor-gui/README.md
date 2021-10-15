@@ -20,5 +20,5 @@ NOTE: In order to set the pattern in the dmd projector, drivers need to be insta
 - Replace WinUSB driver with libusb-win32 driver
 - _NOTE: TI GUI will stop working once you replace the driver. If you want to restore the WinUSB driver, go to Device Manager, search for the libusb-win32 driver, uninstall and check 'Delete the driver software for this device'_
 
-![Projector Pattern Creator](https://github.com/byutemplab/msr-sensor/blob/main/msr-sensor-gui/src/screenshots/Screenshot_1.png/Screenshot_1.png?raw=true)
-![Projector Pattern Creator](https://github.com/byutemplab/msr-sensor/blob/main/msr-sensor-gui/src/screenshots/Screenshot_1.png/Screenshot_2.png?raw=true)
+![Projector Pattern Creator](https://github.com/byutemplab/msr-sensor/blob/main/msr-sensor-gui/src/screenshots/Screenshot_1.png?raw=true)
+![Projector Pattern Creator](https://github.com/byutemplab/msr-sensor/blob/main/msr-sensor-gui/src/screenshots/Screenshot_2.png?raw=true)
