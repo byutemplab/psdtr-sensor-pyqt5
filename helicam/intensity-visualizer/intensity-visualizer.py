@@ -108,7 +108,7 @@ def test2():
         Q = data[:, :, :, 1]
         newData[:, :, :, 0] = np.sqrt(np.power(I, 2) + np.power(Q, 2))
         newData[:, :, :, 1] = np.arctan2(I, Q)
-        return data
+        return newData
 
     # print(data)
     # print(IQtoAmplitudeAndPhase(data))
@@ -341,32 +341,144 @@ def test5():
     # Allocate place for data in IQ format
     heSys.AllocCamData(1, LibHeLIC.CamDataFmt['DF_I16Q16'], 0, 0, 0)
 
-    # Get raw data from the camera
-    cnt = 0
-    res = heSys.Acquire()
-    print("Acquire", cnt, "returned", res)
+    for i in range(10):
+        # Get raw data from the camera
+        res = heSys.Acquire()
+        print("Acquire", i, "returned", res)
 
-    # Process data
-    cd = heSys.ProcessCamData(1, 0, 0)
-    print("ProcessCamData", cnt, "returned", cd.contents.data)
+        # Process data
+        cd = heSys.ProcessCamData(1, 0, 0)
+        print("ProcessCamData", i, "returned", cd.contents.data)
 
-    # Get data and put it in an array
-    # Array shape: frames * 300 [width] * 300 [height] * 2 [I and Q]
-    img = heSys.GetCamData(1, 0, 0)
-    data = img.contents.data
-    data = LibHeLIC.Ptr2Arr(data, (frames, 300, 300, 2), ct.c_int16)
+        # Get data and put it in an array
+        # Array shape: frames * 300 [width] * 300 [height] * 2 [I and Q]
+        img = heSys.GetCamData(1, 0, 0)
+        data = img.contents.data
+        data = LibHeLIC.Ptr2Arr(data, (frames, 300, 300, 2), ct.c_int16)
 
-    # Sum data from all frames, skip frame 0
-    intensity = data[1:, :, :, :].sum(
-        axis=0, dtype=np.int16).sum(axis=2, dtype=np.int16)
-    print(intensity)
+        # Sum data from all frames, skip frame 0
+        intensity = data[1:, :, :, 0].sum(
+            axis=0, dtype=np.int16)
 
-    # Initialize plot
-    fig, ax = plt.subplots()
-    graph = ax.imshow(intensity)
+        if(i == 0):
+            # Initialize plot
+            fig, ax = plt.subplots()
+            graph = ax.imshow(intensity)
+            fig.colorbar(graph)
+            plt.ion()
+            plt.show()
+        else:
+            graph.set_array(intensity)
+            plt.draw()
+            plt.pause(0.001)
 
-    # Show graph + sliders
+    # Shut down camera
+    heSys.Close()
+
+# ========= Visualize Intensity (IQ to Amplitude, phase)========= #
+
+
+def test6():
+    # Init library and open camera
+    heSys = LibHeLIC()
+    heSys.Open(0, sys='c3cam_sl70')
+
+    # Set parameters
+    frames = 50
+    settings = (
+        ('CamMode',       3),         # intensity
+        ('SensTqp',       69989),     # measure 500 Hz
+        ('SensDeltaExp',  0),
+        ('SensNavM2',     2),
+        ('SensNFrames',   frames),
+        ('BSEnable',      1),
+        ('DdsGain',       2),
+        ('TrigFreeExtN',  1),
+        ('InvEncCnt',     0),
+        ('FWHMnFrame',    1),
+        ('IterMaxFrac',   2),
+        ('MinEnergWin',   16),
+        ('OffsetMethod',  1),
+        ('UseLastFrame',  1),
+        ('NFrmAvg',       3),
+        ('AcqStop',       0),
+    )
+    for k, v in settings:
+        try:
+            setattr(heSys.map, k, v)  # heSys.map.k=v
+        except RuntimeError:
+            error('Could not set map property %s to %s', k, v)
+
+    # Allocate place for data in IQ format
+    heSys.AllocCamData(1, LibHeLIC.CamDataFmt['DF_I16Q16'], 0, 0, 0)
+
+    # Set timeout
+    heSys.SetTimeout(2000)
+
+    # List to store data
+    data_list = []
+
+    for i in range(10000):
+        # Get raw data from the camera
+        res = heSys.Acquire()
+        print("Acquire", i, "returned", res)
+
+        # Process data
+        cd = heSys.ProcessCamData(1, 0, 0)
+        print("ProcessCamData", i, "returned", cd.contents.data)
+
+        # Get data and put it in an array
+        # Array shape: frames * 300 [width] * 300 [height] * 2 [I and Q]
+        img = heSys.GetCamData(1, 0, 0)
+        data = img.contents.data
+        data = LibHeLIC.Ptr2Arr(data, (frames, 300, 300, 2), ct.c_int16)
+
+        # Push into list to later save in file
+        data_list.append(data)
+
+        # Get I
+        intensity_i = data[1:, :, :, 0].sum(
+            axis=0, dtype=np.int64)
+
+        # Get Q
+        intensity_q = data[1:, :, :, 1].sum(
+            axis=0, dtype=np.int64)
+
+        # Calculate amplitude
+        intensity_amp = np.sqrt(
+            np.power(intensity_i, 2) + np.power(intensity_q, 2))
+
+        # Calculate phase
+        intensity_phase = np.arctan2(intensity_i, intensity_q)
+
+        if(i == 0):
+            # Initialize plot
+            fig, axs = plt.subplots(2, 2)
+            i_graph = axs[0, 0].imshow(intensity_i, interpolation='nearest')
+            axs[0, 0].title.set_text('I')
+            q_graph = axs[0, 1].imshow(intensity_q)
+            axs[0, 1].title.set_text('Q')
+            amp_graph = axs[1, 0].imshow(intensity_amp)
+            axs[1, 0].title.set_text('Amplitude')
+            phase_graph = axs[1, 1].imshow(intensity_phase)
+            axs[1, 1].title.set_text('Phase')
+            plt.ion()
+            plt.show()
+        else:
+            i_graph.set_array(intensity_i)
+            q_graph.set_array(intensity_q)
+            amp_graph.set_array(intensity_amp)
+            phase_graph.set_array(intensity_phase)
+            plt.pause(0.001)
+
+    # Turn off interactive mode and stay in graph window
+    plt.ioff()
     plt.show()
+
+    # Save data list to a npy file
+    date = datetime.now().strftime("%Y_%m_%d-%I_%M_%S_%p")
+    path = os.path.join('logs', 'intensity_data_list_' + date + '.npy')
+    np.save(path, data_list)
 
     # Shut down camera
     heSys.Close()
@@ -374,7 +486,7 @@ def test5():
 # ========= List connected cameras ========= #
 
 
-def test6():
+def test7():
     print('-'*20)
     heSys = LibHeLIC()
     [count, serials] = LibHeLIC.GetSerials()
@@ -411,7 +523,8 @@ if __name__ == '__main__':
             ('3', test3, 'display saved intensity image'),
             ('4', test4, 'amplitude + phase image'),
             ('5', test5, 'intensity image (averaged)'),
-            ('6', test6, 'scan connected heliCams and print the serial numbers'),
+            ('6', test6, 'intensity image (IQ to amplitude, phase)'),
+            ('7', test7, 'scan connected heliCams and print the serial numbers'),
             ('z', testz, 'print out vesions from python. print out path.'),
         )
         while True:

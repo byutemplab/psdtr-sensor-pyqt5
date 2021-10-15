@@ -44,8 +44,6 @@ frames_array = CreateDotsPatternArray(trajectories_list, 30)
 
 fig, ax = plt.subplots()
 im = ax.imshow(frames_array[0], animated=True)
-ax.annotate("T1", xy=(0, 0), xytext=(10, 10),
-            arrowprops=dict(arrowstyle="->", lw=10))
 
 frame_num = 0
 
@@ -57,5 +55,5 @@ def updatefig(*args):
     return im,
 
 
-# ani = animation.FuncAnimation(fig, updatefig, interval=10, blit=True)
+ani = animation.FuncAnimation(fig, updatefig, interval=10, blit=True)
 plt.show()

@@ -1,21 +1,19 @@
 import sys
 
-from PyQt5.QtWidgets import QApplication, QMainWindow, QMenu, QVBoxLayout, QSizePolicy, QMessageBox, QWidget, QPushButton, QComboBox, QSpinBox, QGraphicsDropShadowEffect
-from PyQt5.QtGui import QIcon, QColor
-from PyQt5 import QtWidgets, QtGui, QtCore
+from PyQt5.QtWidgets import *
+from PyQt5.QtGui import *
+from PyQt5.QtCore import *
 
-
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
 from matplotlib.figure import Figure
-import matplotlib.pyplot as plt
-import matplotlib.animation as animation
+import matplotlib.pyplot
+import matplotlib.animation
 import matplotlib.colors
 
-import pycrafter6500 as projector
+import skimage.draw
 import numpy as np
 
-import scipy.misc
-from skimage.draw import line, disk, rectangle
+import pycrafter6500
 
 RES_Y = 1920
 RES_X = 1080
@@ -30,8 +28,8 @@ def CreateDotsPatternArray(trajectories_list, num_frames, point_diameter=5, rows
     # Draw each green dot trajectory in the frames array
     for trajectory in trajectories_list:
         # Get every point in the line
-        rr, cc = line(trajectory['start'][0], trajectory['start'][1],
-                      trajectory['end'][0], trajectory['end'][1])
+        rr, cc = skimage.draw.line(trajectory['start'][0], trajectory['start'][1],
+                                   trajectory['end'][0], trajectory['end'][1])
 
         # Calculate distance between dots
         dot_step = (len(rr) - 1) / (num_frames - 1)
@@ -43,7 +41,7 @@ def CreateDotsPatternArray(trajectories_list, num_frames, point_diameter=5, rows
 
             # Draw point in current frame
             try:
-                rr_disk, cc_disk = disk(
+                rr_disk, cc_disk = skimage.draw.disk(
                     (rr[dot_idx], cc[dot_idx]), point_diameter)
                 frame[rr_disk, cc_disk] = 1
             except:
@@ -78,24 +76,24 @@ def SetPatternSequence(array, color, exposure):
         print("Projector not connected")
 
 
-class TabBar(QtWidgets.QTabBar):
+class TabBar(QTabBar):
     def tabSizeHint(self, index):
-        s = QtWidgets.QTabBar.tabSizeHint(self, index)
+        s = QTabBar.tabSizeHint(self, index)
         s.transpose()
         return s
 
     def paintEvent(self, event):
-        painter = QtWidgets.QStylePainter(self)
-        opt = QtWidgets.QStyleOptionTab()
+        painter = QStylePainter(self)
+        opt = QStyleOptionTab()
 
         for i in range(self.count()):
             self.initStyleOption(opt, i)
-            painter.drawControl(QtWidgets.QStyle.CE_TabBarTabShape, opt)
+            painter.drawControl(QStyle.CE_TabBarTabShape, opt)
             painter.save()
 
             s = opt.rect.size()
             s.transpose()
-            r = QtCore.QRect(QtCore.QPoint(), s)
+            r = QRect(QPoint(), s)
             r.moveCenter(opt.rect.center())
             opt.rect = r
 
@@ -103,31 +101,38 @@ class TabBar(QtWidgets.QTabBar):
             painter.translate(c)
             painter.rotate(90)
             painter.translate(-c)
-            painter.drawControl(QtWidgets.QStyle.CE_TabBarTabLabel, opt)
+            painter.drawControl(QStyle.CE_TabBarTabLabel, opt)
             painter.restore()
 
 
-class TabWidget(QtWidgets.QTabWidget):
+class CustomTabWidget(QTabWidget):
     def __init__(self, *args, **kwargs):
-        QtWidgets.QTabWidget.__init__(self, *args, **kwargs)
+        QTabWidget.__init__(self, *args, **kwargs)
         self.setTabBar(TabBar(self))
-        self.setTabPosition(QtWidgets.QTabWidget.West)
+        self.setTabPosition(QTabWidget.West)
 
 
-class ProxyStyle(QtWidgets.QProxyStyle):
+class ProxyStyle(QProxyStyle):
     def drawControl(self, element, opt, painter, widget):
-        if element == QtWidgets.QStyle.CE_TabBarTabLabel:
-            ic = self.pixelMetric(QtWidgets.QStyle.PM_TabBarIconSize)
-            r = QtCore.QRect(opt.rect)
+        if element == QStyle.CE_TabBarTabLabel:
+            ic = self.pixelMetric(QStyle.PM_TabBarIconSize)
+            r = QRect(opt.rect)
             w = 0 if opt.icon.isNull() else opt.rect.width() + \
-                self.pixelMetric(QtWidgets.QStyle.PM_TabBarIconSize)
+                self.pixelMetric(QStyle.PM_TabBarIconSize)
             r.setHeight(opt.fontMetrics.width(opt.text) + w)
             r.moveBottom(opt.rect.bottom())
             opt.rect = r
-        QtWidgets.QProxyStyle.drawControl(self, element, opt, painter, widget)
+        QProxyStyle.drawControl(self, element, opt, painter, widget)
 
 
-class App(TabWidget):
+class camera_tab(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.header = QLabel(self)
+        self.header.setText("Hello World")
+
+
+class App(CustomTabWidget):
 
     def __init__(self):
         super().__init__()
@@ -147,13 +152,15 @@ class App(TabWidget):
         self.camera_tab = QWidget()
         self.addTab(self.projector_tab, QIcon(
             "icons/projector-icon.png"), "DMD Projector")
-        self.addTab(self.camera_tab, QIcon(
+
+        camera_widget = camera_tab()
+        self.addTab(camera_widget, QIcon(
             "icons/camera-icon.png"), "  Heliotis Camera")
 
         # Tab header
-        font = QtGui.QFont()
+        font = QFont()
         font.setPointSize(20)
-        self.projector_tab.header = QtWidgets.QLabel(self)
+        self.projector_tab.header = QLabel(self)
         self.projector_tab.header.setFont(font)
         self.projector_tab.header.setText("Projector Settings")
         self.projector_tab.header.move(160, 20)
@@ -170,11 +177,11 @@ class App(TabWidget):
         self.m.setGraphicsEffect(shadow)
 
         # Set font for all small headers
-        font = QtGui.QFont()
+        font = QFont()
         font.setPointSize(8)
 
         # Number of measurements label
-        self.header = QtWidgets.QLabel(self)
+        self.header = QLabel(self)
         self.header.setFont(font)
         self.header.setText("# Measurements")
         self.header.move(160, 410)
@@ -188,7 +195,7 @@ class App(TabWidget):
         self.num_measurements.valueChanged.connect(self.ChangeNumMeasurements)
 
         # Point diameter label
-        self.header = QtWidgets.QLabel(self)
+        self.header = QLabel(self)
         self.header.setFont(font)
         self.header.setText("Point Diameter")
         self.header.move(160 + 133, 410)
@@ -202,7 +209,7 @@ class App(TabWidget):
         self.point_diameter.valueChanged.connect(self.ChangePointDiameter)
 
         # Exposure time label
-        self.header = QtWidgets.QLabel(self)
+        self.header = QLabel(self)
         self.header.setFont(font)
         self.header.setText("Exposure Time")
         self.header.move(160 + 133 * 2, 410)
@@ -224,7 +231,7 @@ class App(TabWidget):
         self.preview_btn.resize(100, 30)
 
         # Trajectory selection label
-        self.header = QtWidgets.QLabel(self)
+        self.header = QLabel(self)
         self.header.setFont(font)
         self.header.setText("Pattern Array")
         self.header.move(160, 480)
@@ -237,7 +244,7 @@ class App(TabWidget):
             self.ChangeTrajectorySelection)
 
         # New trajectory label
-        self.header = QtWidgets.QLabel(self)
+        self.header = QLabel(self)
         self.header.setFont(font)
         self.header.setText("New Trajectory")
         self.header.move(160 + 133, 480)
@@ -251,7 +258,7 @@ class App(TabWidget):
         self.new_trajectory_btn.resize(100, 30)
 
         # Select start point label
-        self.header = QtWidgets.QLabel(self)
+        self.header = QLabel(self)
         self.header.setFont(font)
         self.header.setText("Starting Point")
         self.header.move(160 + 133 * 2, 480)
@@ -261,12 +268,12 @@ class App(TabWidget):
         self.start_point_btn.setCheckable(True)
         self.start_point_btn.clicked.connect(self.ClickedStartPointBtn)
         self.start_point_btn.setToolTip(
-            'Select start point for the trajectory')
+            'Select start point for the trajectory (S)')
         self.start_point_btn.move(160 + 133 * 2, 500)
         self.start_point_btn.resize(100, 30)
 
         # Select end point label
-        self.header = QtWidgets.QLabel(self)
+        self.header = QLabel(self)
         self.header.setFont(font)
         self.header.setText("Ending Point")
         self.header.move(160 + 133 * 3, 480)
@@ -275,20 +282,21 @@ class App(TabWidget):
         self.end_point_btn = QPushButton('Select', self)
         self.end_point_btn.setCheckable(True)
         self.end_point_btn.clicked.connect(self.ClickedEndPointBtn)
-        self.end_point_btn.setToolTip('Select end point for the trajectory')
+        self.end_point_btn.setToolTip(
+            'Select end point for the trajectory (E)')
         self.end_point_btn.move(160 + 133 * 3, 500)
         self.end_point_btn.resize(100, 30)
 
         # Connection Status
-        self.connection_status = QtWidgets.QLabel(self)
+        self.connection_status = QLabel(self)
         self.connection_status.setFont(font)
         self.connection_status.setText("Disconnected")
         self.connection_status.move(160 + 133 * 2 + 30, 577)
 
         # Check connection status every 2 seconds
-        self.check_connection_timer = QtCore.QTimer(self)
+        self.check_connection_timer = QTimer(self)
         self.check_connection_timer.setInterval(2000)  # 2 seconds
-        self.check_connection_timer.timeout.connect(self.CheckConnection)
+        self.check_connection_timer.timeout.connect(lambda: print("hey"))
 
         # Send pattern to projector
         self.send_pattern_btn = QPushButton('Send Pattern', self)
@@ -339,29 +347,39 @@ class App(TabWidget):
                            self.m.exposure * 1000)
 
     def keyPressEvent(self, event):
+        key = event.key()
         # On N key press, add new trajectory
-        if event.key() == QtCore.Qt.Key_N:
+        if key == Qt.Key_N:
             self.AddNewTrajectory()
+
+        # On S key press, toggle start point button
+        if key == Qt.Key_S:
+            self.start_point_btn.toggle()
+
+        # On E key press, toggle end point button
+        if key == Qt.Key_E:
+            self.end_point_btn.toggle()
 
     def CheckConnection(self):
         # If not connected, try to connect
-        if (dlp.connected == False):
-            dlp.TryConnection()
+        # if (dlp.connected == False):
+        #     dlp.TryConnection()
+        print("yo, whats up")
 
 
-class PlotCanvas(FigureCanvas):
+class PlotCanvas(FigureCanvasQTAgg):
 
     def __init__(self, parent=None, width=5, height=4, dpi=100):
         self.fig = Figure(figsize=(width, height), dpi=dpi)
 
         self.parent = parent
-        FigureCanvas.__init__(self, self.fig)
+        FigureCanvasQTAgg.__init__(self, self.fig)
         self.setParent(parent)
 
-        FigureCanvas.setSizePolicy(self,
-                                   QSizePolicy.Expanding,
-                                   QSizePolicy.Expanding)
-        FigureCanvas.updateGeometry(self)
+        FigureCanvasQTAgg.setSizePolicy(self,
+                                        QSizePolicy.Expanding,
+                                        QSizePolicy.Expanding)
+        FigureCanvasQTAgg.updateGeometry(self)
         self.plot()
 
     def plot(self):
@@ -379,7 +397,7 @@ class PlotCanvas(FigureCanvas):
 
         # Import grain boundary sample image and set as background
         # Resize to projector resolution (1920x1080)
-        self.image = plt.imread("grain-boundaries/sample.png")
+        self.image = matplotlib.pyplot.imread("grain-boundaries/sample.png")
         self.ax.imshow(self.image, extent=[0, RES_Y, RES_X, 0])
 
         # Record coordinates when user clicks on the plot
@@ -406,16 +424,18 @@ class PlotCanvas(FigureCanvas):
             # Superpose background to hide initial frame
             self.ax.imshow(self.image, extent=[0, RES_Y, RES_X, 0])
 
+            # Update graph with next frame
             self.frame_num = 0
 
-            def updatefig(*args):
-                self.frame_num += 1
+            def UpdateFig(*args):
                 self.graph.set_array(
                     self.frames_array[self.frame_num % self.num_measurements])
+                self.frame_num += 1
                 return self.graph,
 
-            self.animation = animation.FuncAnimation(
-                self.fig, updatefig, interval=self.exposure, blit=True)
+            # Set animation
+            self.animation = matplotlib.animation.FuncAnimation(
+                self.fig, UpdateFig, interval=self.exposure, blit=True)
 
             self.draw()
         else:
@@ -480,7 +500,7 @@ class PlotCanvas(FigureCanvas):
 if __name__ == '__main__':
 
     # Inititalize dmd
-    dlp = projector.dmd()
+    dlp = pycrafter6500.dmd()
 
     # Start GUI
     app = QApplication(sys.argv)
