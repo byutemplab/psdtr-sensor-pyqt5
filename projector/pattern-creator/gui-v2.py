@@ -349,6 +349,7 @@ class App(CustomTabWidget):
     def keyPressEvent(self, event):
         key = event.key()
         # On N key press, add new trajectory
+<<<<<<< HEAD
         if key == Qt.Key_N:
             self.AddNewTrajectory()
 
@@ -358,6 +359,17 @@ class App(CustomTabWidget):
 
         # On E key press, toggle end point button
         if key == Qt.Key_E:
+=======
+        if key == QtCore.Qt.Key_N:
+            self.AddNewTrajectory()
+
+        # On S key press, toggle start point button
+        if key == QtCore.Qt.Key_S:
+            self.start_point_btn.toggle()
+
+        # On E key press, toggle end point button
+        if key == QtCore.Qt.Key_E:
+>>>>>>> 49957849b96a7378c0dbc68f7e96dd932dfd4651
             self.end_point_btn.toggle()
 
     def CheckConnection(self):
@@ -434,7 +446,11 @@ class PlotCanvas(FigureCanvasQTAgg):
                 return self.graph,
 
             # Set animation
+<<<<<<< HEAD
             self.animation = matplotlib.animation.FuncAnimation(
+=======
+            self.animation = animation.FuncAnimation(
+>>>>>>> 49957849b96a7378c0dbc68f7e96dd932dfd4651
                 self.fig, UpdateFig, interval=self.exposure, blit=True)
 
             self.draw()
