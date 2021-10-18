@@ -1,0 +1,70 @@
+Heliotis heliCam C3 LINUX DEVICE DRIVER (based on heliSDK 1.x.x)
+
+This is the Linux driver for all heliotis heliCam C3 devices.
+
+Author: heliotis, info@heliotis.ch
+        Silvan Murer, sm@heliotis.ch
+
+Copyright (c) 2015, heliotis inc.
+All rights reserved.
+
+
+
+REQUIREMENTS
+
+This driver has been tested under ubuntu 14.04 LTS
+It requires libusb-0.1-4 (>= 2:0.1.12-5).
+
+********************** IMPORTANT ****** IMPORTANT **********************
+* If you want to access the heliCam C3 as a user other than root, make *
+* sure you give the appropriate permissions to the usb device.         *
+********************** IMPORTANT ****** IMPORTANT **********************
+
+
+
+USB drivers
+
+By default Linux configures USB devices so that they are owned by root. You should be running your executables as yourself, not root.
+For that, this package (libhelic-dev) create a rules-file "45-heliotis.rules" in /lib/udev/rules.d/
+By default, the group to use the heliCam C3 is defined as "heliotis".
+
+To use the heliCam C3 with a preferred user, you can the following steps:
+----------- USB permissions (1) -----------
+   create a group with the name "heliotis" and put the users that will use the "heliCam C3" in this group.
+   sudo groupadd heliotis
+   sudo adduser heliotis <username>
+   Reboot the computer after this two commands. check the entry with: "groups"
+
+----------- USB permissions (2) -----------      
+   change the rules-file: /lib/udev/rules.d/45-heliotis.rules
+
+   SUBSYSTEMS=="usb", ATTRS{idVendor}=="0852", ATTRS{idProduct}=="0081", MODE="666", GROUP="<yourUserGroup>" #"HeliCam"
+   SUBSYSTEMS=="usb", ATTRS{idVendor}=="04b4", ATTRS{idProduct}=="8613", MODE="666", GROUP="<yourUserGroup>" #"HeliCam - No EEPROM"
+
+----------- USB permissions (3) -----------
+other solution are also possible...
+
+
+
+FILES INCLUDED IN THIS PACKAGE
+List all files included in this package:
+
+dpkg -c libhelic-dev_1.x.x-x_amd64.deb
+
+
+
+TESTING
+
+To test the heliCam connection, use the application "libHeLICTester".
+located at: /usr/bin/
+
+
+
+EXAMPLES
+
+A simple C++ example is also included in this package. 
+located at: /usr/share/libhelic/cpp/example/simple
+
+
+
+
