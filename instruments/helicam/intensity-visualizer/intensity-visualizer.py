@@ -412,15 +412,6 @@ def test6():
     # Allocate place for data in IQ format
     heSys.AllocCamData(1, LibHeLIC.CamDataFmt['DF_I16Q16'], 0, 0, 0)
 
-<<<<<<< HEAD
-    # Set timeout
-    heSys.SetTimeout(2000)
-
-    # List to store data
-    data_list = []
-
-=======
->>>>>>> 49957849b96a7378c0dbc68f7e96dd932dfd4651
     for i in range(10000):
         # Get raw data from the camera
         res = heSys.Acquire()
@@ -436,12 +427,6 @@ def test6():
         data = img.contents.data
         data = LibHeLIC.Ptr2Arr(data, (frames, 300, 300, 2), ct.c_int16)
 
-<<<<<<< HEAD
-        # Push into list to later save in file
-        data_list.append(data)
-
-=======
->>>>>>> 49957849b96a7378c0dbc68f7e96dd932dfd4651
         # Get I
         intensity_i = data[1:, :, :, 0].sum(
             axis=0, dtype=np.int64)

@@ -4,7 +4,8 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 from matplotlib.figure import Figure
 import matplotlib.pyplot
 import matplotlib.animation
@@ -37,6 +38,10 @@ class ProjectorTab(QWidget):
         self.m = PatternPlot(self, width=5, height=3)
         self.m.move(30, 80)
 
+        # Navigation toolbar for graph
+        self.toolbar = NavigationToolbar(self.m, self)
+        self.toolbar.move(22, 400)
+
         # Set shadow behind widget
         shadow = QGraphicsDropShadowEffect()
         shadow.setBlurRadius(15)
@@ -52,11 +57,11 @@ class ProjectorTab(QWidget):
         self.header = QLabel(self)
         self.header.setFont(font)
         self.header.setText("# Measurements")
-        self.header.move(30, 410)
+        self.header.move(30, 460)
 
         # Number of measurements
         self.num_measurements = QSpinBox(self)
-        self.num_measurements.move(30, 430)
+        self.num_measurements.move(30, 480)
         self.num_measurements.resize(100, 30)
         self.num_measurements.setValue(self.dotsPattern.num_measurements)
         self.num_measurements.setRange(2, 50)
@@ -66,11 +71,11 @@ class ProjectorTab(QWidget):
         self.header = QLabel(self)
         self.header.setFont(font)
         self.header.setText("Point Diameter")
-        self.header.move(30 + 133, 410)
+        self.header.move(30 + 133, 460)
 
         # Point diameter
         self.point_diameter = QSpinBox(self)
-        self.point_diameter.move(30 + 133, 430)
+        self.point_diameter.move(30 + 133, 480)
         self.point_diameter.resize(100, 30)
         self.point_diameter.setValue(self.dotsPattern.point_diameter)
         self.point_diameter.setRange(1, 100)
@@ -80,11 +85,11 @@ class ProjectorTab(QWidget):
         self.header = QLabel(self)
         self.header.setFont(font)
         self.header.setText("Exposure Time")
-        self.header.move(30 + 133 * 2, 410)
+        self.header.move(30 + 133 * 2, 460)
 
         # Exposure time label
         self.exposure = QSpinBox(self)
-        self.exposure.move(30 + 133 * 2, 430)
+        self.exposure.move(30 + 133 * 2, 480)
         self.exposure.resize(100, 30)
         self.exposure.setRange(0, 1000)
         self.exposure.setValue(self.dotsPattern.exposure)
@@ -95,18 +100,18 @@ class ProjectorTab(QWidget):
         self.preview_btn.setCheckable(True)
         self.preview_btn.clicked.connect(self.m.PreviewAnimation)
         self.preview_btn.setToolTip('Preview sequence animation')
-        self.preview_btn.move(30 + 133 * 3, 430)
+        self.preview_btn.move(30 + 133 * 3, 480)
         self.preview_btn.resize(100, 30)
 
         # Trajectory selection label
         self.header = QLabel(self)
         self.header.setFont(font)
         self.header.setText("Pattern Array")
-        self.header.move(30, 480)
+        self.header.move(30, 530)
 
         # Trajectory selection
         self.trajectory_selection = QComboBox(self)
-        self.trajectory_selection.move(30, 500)
+        self.trajectory_selection.move(30, 550)
         self.trajectory_selection.resize(100, 30)
         self.trajectory_selection.activated[str].connect(
             self.ChangeTrajectorySelection)
@@ -115,21 +120,21 @@ class ProjectorTab(QWidget):
         self.header = QLabel(self)
         self.header.setFont(font)
         self.header.setText("New Trajectory")
-        self.header.move(30 + 133, 480)
+        self.header.move(30 + 133, 530)
 
         # New trajectory button
         self.new_trajectory_btn = QPushButton('+', self)
         self.new_trajectory_btn.clicked.connect(self.AddNewTrajectory)
         self.new_trajectory_btn.setToolTip(
             'Add new trajectory to the array (N)')
-        self.new_trajectory_btn.move(30 + 133, 500)
+        self.new_trajectory_btn.move(30 + 133, 550)
         self.new_trajectory_btn.resize(100, 30)
 
         # Select start point label
         self.header = QLabel(self)
         self.header.setFont(font)
         self.header.setText("Starting Point")
-        self.header.move(30 + 133 * 2, 480)
+        self.header.move(30 + 133 * 2, 530)
 
         # Select start point
         self.start_point_btn = QPushButton('Select', self)
@@ -137,14 +142,14 @@ class ProjectorTab(QWidget):
         self.start_point_btn.clicked.connect(self.ClickedStartPointBtn)
         self.start_point_btn.setToolTip(
             'Select start point for the trajectory (S)')
-        self.start_point_btn.move(30 + 133 * 2, 500)
+        self.start_point_btn.move(30 + 133 * 2, 550)
         self.start_point_btn.resize(100, 30)
 
         # Select end point label
         self.header = QLabel(self)
         self.header.setFont(font)
         self.header.setText("Ending Point")
-        self.header.move(30 + 133 * 3, 480)
+        self.header.move(30 + 133 * 3, 530)
 
         # Select end point
         self.end_point_btn = QPushButton('Select', self)
@@ -152,14 +157,14 @@ class ProjectorTab(QWidget):
         self.end_point_btn.clicked.connect(self.ClickedEndPointBtn)
         self.end_point_btn.setToolTip(
             'Select end point for the trajectory (E)')
-        self.end_point_btn.move(30 + 133 * 3, 500)
+        self.end_point_btn.move(30 + 133 * 3, 550)
         self.end_point_btn.resize(100, 30)
 
         # Send pattern to projector
         self.send_pattern_btn = QPushButton('Send Pattern', self)
         self.send_pattern_btn.clicked.connect(self.SendPattern)
         self.send_pattern_btn.setToolTip('Send pattern to projector')
-        self.send_pattern_btn.move(30 + 133 * 3, 570)
+        self.send_pattern_btn.move(30 + 133 * 3, 620)
         self.send_pattern_btn.resize(100, 30)
 
         self.show()
@@ -217,19 +222,19 @@ class ProjectorTab(QWidget):
             self.end_point_btn.toggle()
 
 
-class PatternPlot(FigureCanvasQTAgg):
+class PatternPlot(FigureCanvas):
 
     def __init__(self, parent=None, width=5, height=4, dpi=100):
         self.fig = Figure(figsize=(width, height), dpi=dpi)
 
         self.parent = parent
-        FigureCanvasQTAgg.__init__(self, self.fig)
+        FigureCanvas.__init__(self, self.fig)
         self.setParent(parent)
 
-        FigureCanvasQTAgg.setSizePolicy(self,
-                                        QSizePolicy.Expanding,
-                                        QSizePolicy.Expanding)
-        FigureCanvasQTAgg.updateGeometry(self)
+        FigureCanvas.setSizePolicy(self,
+                                   QSizePolicy.Expanding,
+                                   QSizePolicy.Expanding)
+        FigureCanvas.updateGeometry(self)
         self.plot()
 
     def plot(self):
