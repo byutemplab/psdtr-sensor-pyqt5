@@ -5,6 +5,7 @@ from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 from matplotlib.figure import Figure
 import matplotlib.pyplot
 import matplotlib.animation
@@ -67,8 +68,40 @@ class PatternPlot(FigureCanvas):
         # Start by showing frame 0 and I parameter
         frameNum = 0
         IQProperty = 0
+        self.data_to_graph = data[frameNum, :, :, IQProperty]
 
-        # Initialize plot
-        self.ax = self.fig.add_subplot(111)
-        graph = self.ax.imshow(data[frameNum, :, :, IQProperty])
+        # Initialize main plot
+        self.main = self.fig.add_subplot(10, 10, (1, 10*8-2))
+        self.main.imshow(self.data_to_graph)
+
+        # Calculate maximum value
+        max_val = np.amax(self.data_to_graph)
+
+        # Initialize column plot
+        self.col_g = self.fig.add_subplot(10, 10, (10, 10*8))
+        self.col_graph, = self.col_g.plot(
+            self.data_to_graph[:, 150], np.arange(300))  # Display vertically
+        self.col_g.set_ylim([300, 0])
+        self.col_g.set_xlim([max_val + 100, 0])
+        self.col_g.yaxis.set_visible(False)
+        self.col_g.xaxis.set_visible(False)
+
+        # Initialize row plot
+        self.row_g = self.fig.add_subplot(10, 10, (10*9+1, 10*10-2))
+        self.row_graph, = self.row_g.plot(self.data_to_graph[150, :])
+        self.row_g.set_ylim([0, max_val + 100])
+        self.row_g.set_xlim([0, 300])
+        self.row_g.yaxis.set_visible(False)
+        self.row_g.xaxis.set_visible(False)
+
+        # Record coordinates when user clicks on the plot
+        self.fig.canvas.mpl_connect('button_press_event', self.OnClick)
+
+        self.draw()
+
+    def OnClick(self, event):
+        row = int(event.ydata)
+        self.row_graph.set_ydata(self.data_to_graph[row, :])
+        col = int(event.xdata)
+        self.col_graph.set_xdata(self.data_to_graph[:, col])
         self.draw()
