@@ -94,7 +94,7 @@ class PatternPlot(FigureCanvas):
 
         # Init cursor annotation
         self.cursor = matplotlib.widgets.Cursor(self.main, horizOn=True, vertOn=True, useblit=True,
-                                                color='grey', linewidth=0.5)
+                                                color='grey', linewidth=0.5, linestyle='dotted')
         self.target = [90, 150]
         self.target_lines = []
         self.ShowTargetLines()
@@ -174,9 +174,9 @@ class PatternPlot(FigureCanvas):
     def ShowTargetLines(self):
         self.RemoveTargetLines()
         y_target_line = self.main.axhline(
-            y=self.target[0], color='black', linestyle='-', linewidth=0.5)
+            y=self.target[0], color='black', linestyle='dotted', linewidth=0.5)
         x_target_line = self.main.axvline(
-            x=self.target[1], color='black', linestyle='-', linewidth=0.5)
+            x=self.target[1], color='black', linestyle='dotted', linewidth=0.5)
         self.target_lines.append(y_target_line)
         self.target_lines.append(x_target_line)
 
