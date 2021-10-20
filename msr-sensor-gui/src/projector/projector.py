@@ -21,7 +21,7 @@ RES_X = 1080
 class ProjectorTab(QWidget):
     def __init__(self):
         super().__init__()
-        self.dotsPattern = DotsPattern()
+        self.dots_pattern = DotsPattern()
         self.rgb_projector = dmd()  # Inititalize dmd
         self.InitUI()
 
@@ -35,11 +35,11 @@ class ProjectorTab(QWidget):
         self.header.move(30, 20)
 
         # Pattern preview from matplotlib
-        self.m = PatternPlot(self, width=5, height=3)
-        self.m.move(30, 80)
+        self.plot = PatternPlot(self, width=5, height=3)
+        self.plot.move(30, 80)
 
         # Navigation toolbar for graph
-        self.toolbar = NavigationToolbar(self.m, self)
+        self.toolbar = NavigationToolbar(self.plot, self)
         self.toolbar.move(22, 400)
 
         # Set shadow behind widget
@@ -47,7 +47,7 @@ class ProjectorTab(QWidget):
         shadow.setBlurRadius(15)
         shadow.setOffset(1)
         shadow.setColor(QColor(20, 20, 20, 30))
-        self.m.setGraphicsEffect(shadow)
+        self.plot.setGraphicsEffect(shadow)
 
         # Set font for all small headers
         font = QFont()
@@ -63,7 +63,7 @@ class ProjectorTab(QWidget):
         self.num_measurements = QSpinBox(self)
         self.num_measurements.move(30, 480)
         self.num_measurements.resize(100, 30)
-        self.num_measurements.setValue(self.dotsPattern.num_measurements)
+        self.num_measurements.setValue(self.dots_pattern.num_measurements)
         self.num_measurements.setRange(2, 50)
         self.num_measurements.valueChanged.connect(self.ChangeNumMeasurements)
 
@@ -77,7 +77,7 @@ class ProjectorTab(QWidget):
         self.point_diameter = QSpinBox(self)
         self.point_diameter.move(30 + 133, 480)
         self.point_diameter.resize(100, 30)
-        self.point_diameter.setValue(self.dotsPattern.point_diameter)
+        self.point_diameter.setValue(self.dots_pattern.point_diameter)
         self.point_diameter.setRange(1, 100)
         self.point_diameter.valueChanged.connect(self.ChangePointDiameter)
 
@@ -92,13 +92,13 @@ class ProjectorTab(QWidget):
         self.exposure.move(30 + 133 * 2, 480)
         self.exposure.resize(100, 30)
         self.exposure.setRange(0, 1000)
-        self.exposure.setValue(self.dotsPattern.exposure)
+        self.exposure.setValue(self.dots_pattern.exposure)
         self.exposure.valueChanged.connect(self.ChangeExposure)
 
         # Preview button
         self.preview_btn = QPushButton('Preview', self)
         self.preview_btn.setCheckable(True)
-        self.preview_btn.clicked.connect(self.m.PreviewAnimation)
+        self.preview_btn.clicked.connect(self.plot.PreviewAnimation)
         self.preview_btn.setToolTip('Preview sequence animation')
         self.preview_btn.move(30 + 133 * 3, 480)
         self.preview_btn.resize(100, 30)
@@ -178,25 +178,25 @@ class ProjectorTab(QWidget):
             self.start_point_btn.toggle()
 
     def ChangeNumMeasurements(self, value):
-        self.dotsPattern.num_measurements = value
+        self.dots_pattern.num_measurements = value
 
     def ChangePointDiameter(self, value):
-        self.dotsPattern.point_diameter = value
+        self.dots_pattern.point_diameter = value
 
     def ChangeExposure(self, value):
-        self.dotsPattern.exposure = value
+        self.dots_pattern.exposure = value
 
     def ChangeTrajectorySelection(self, value):
         # Get index of selected trajectory
-        self.m.selected_trajectory_idx = int(value.split(" ")[1]) - 1
+        self.plot.selected_trajectory_idx = int(value.split(" ")[1]) - 1
 
     def AddNewTrajectory(self):
-        self.m.trajectories_list.append({'start': (0, 0), 'end': (0, 0)})
-        num_trajectory = len(self.m.trajectories_list)
+        self.plot.trajectories_list.append({'start': (0, 0), 'end': (0, 0)})
+        num_trajectory = len(self.plot.trajectories_list)
         newItem = "Trajectory " + str(num_trajectory)
         self.trajectory_selection.addItem(newItem)
         self.trajectory_selection.setCurrentText(newItem)
-        self.m.selected_trajectory_idx = num_trajectory - 1  # Conversion to 0-index
+        self.plot.selected_trajectory_idx = num_trajectory - 1  # Conversion to 0-index
 
         # Toggle on starting point selection button
         if(self.start_point_btn.isChecked() == False):
@@ -204,8 +204,8 @@ class ProjectorTab(QWidget):
 
     def SendPattern(self):
         print('Sending pattern to projector')
-        self.m.UpdateFrames()
-        self.dotsPattern.Send(self.rgb_projector)
+        self.plot.UpdateFrames()
+        self.dots_pattern.Send(self.rgb_projector)
 
     def keyPressEvent(self, event):
         key = event.key()

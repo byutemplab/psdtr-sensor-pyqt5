@@ -31,15 +31,27 @@ class CameraTab(QWidget):
         self.header.move(30, 20)
 
         # Pattern preview from matplotlib
-        self.m = PatternPlot(self, width=5, height=5)
-        self.m.move(30, 80)
+        self.plot = PatternPlot(self, width=5, height=5)
+        self.plot.move(30, 80)
+
+        # Navigation toolbar for graph
+        self.toolbar = NavigationToolbar(self.plot, self)
+        self.toolbar.move(22, 600)
 
         # Set shadow behind widget
         shadow = QGraphicsDropShadowEffect()
         shadow.setBlurRadius(15)
         shadow.setOffset(1)
         shadow.setColor(QColor(20, 20, 20, 30))
-        self.m.setGraphicsEffect(shadow)
+        self.plot.setGraphicsEffect(shadow)
+
+        # Start/stop pattern
+        self.sample_animation_btn = QPushButton('Animation', self)
+        self.sample_animation_btn.setCheckable(True)
+        self.sample_animation_btn.clicked.connect(self.plot.RunSampleAnimation)
+        self.sample_animation_btn.setToolTip('Start sample input animation')
+        self.sample_animation_btn.move(30 + 133 * 3, 620)
+        self.sample_animation_btn.resize(100, 30)
 
         self.show()
 
@@ -105,3 +117,21 @@ class PatternPlot(FigureCanvas):
         col = int(event.xdata)
         self.col_graph.set_xdata(self.data_to_graph[:, col])
         self.draw()
+
+    def RunSampleAnimation(self):
+        if(self.parent.sample_animation_btn.isChecked() == True):
+            self.graph = self.main.imshow(self.data_to_graph)
+
+            def UpdateFig(*args):
+                self.data_to_graph = np.rot90(self.data_to_graph)
+                self.graph.set_array(self.data_to_graph)
+                return self.graph,
+
+            # Set animation
+            self.animation = matplotlib.animation.FuncAnimation(
+                self.fig, UpdateFig, interval=1000, blit=True)
+
+            self.draw()
+        else:
+            # Pause animation
+            self.animation.pause()
