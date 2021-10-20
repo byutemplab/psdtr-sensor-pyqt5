@@ -259,7 +259,7 @@ class PatternPlot(FigureCanvas):
         self.draw()
 
     def UpdateFrames(self):
-        self.parent.dotsPattern.Create(self.trajectories_list)
+        self.parent.dots_pattern.Create(self.trajectories_list)
 
     def PreviewAnimation(self):
         if(self.parent.preview_btn.isChecked() == True):
@@ -271,7 +271,7 @@ class PatternPlot(FigureCanvas):
 
             # Start with first frame
             self.graph = self.ax.imshow(
-                self.parent.dotsPattern.frames_array[0], cmap=cmap)
+                self.parent.dots_pattern.frames_array[0], cmap=cmap)
 
             # Superpose background to hide initial frame
             self.ax.imshow(self.image, extent=[0, RES_Y, RES_X, 0])
@@ -281,13 +281,13 @@ class PatternPlot(FigureCanvas):
 
             def UpdateFig(*args):
                 self.graph.set_array(
-                    self.parent.dotsPattern.frames_array[self.frame_num % self.parent.dotsPattern.num_measurements])
+                    self.parent.dots_pattern.frames_array[self.frame_num % self.parent.dots_pattern.num_measurements])
                 self.frame_num += 1
                 return self.graph,
 
             # Set animation
             self.animation = matplotlib.animation.FuncAnimation(
-                self.fig, UpdateFig, interval=self.parent.dotsPattern.exposure, blit=True)
+                self.fig, UpdateFig, interval=self.parent.dots_pattern.exposure, blit=True)
 
             self.draw()
         else:

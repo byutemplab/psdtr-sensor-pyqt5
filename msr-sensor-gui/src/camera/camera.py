@@ -15,13 +15,16 @@ import numpy as np
 
 from .imageprocessing import Scan
 
+CAMERA_CONNECTED = False
+
 
 class CameraTab(QWidget):
     def __init__(self):
         super().__init__()
+        if (CAMERA_CONNECTED):
+            self.scan = Scan()
+            self.scan.InitCamera()
         self.InitUI()
-        self.scan = Scan()
-        self.scan.InitCamera()
 
     def InitUI(self):
         # Tab header
@@ -48,10 +51,11 @@ class CameraTab(QWidget):
         self.plot.setGraphicsEffect(shadow)
 
         # Start/stop pattern
-        self.sample_animation_btn = QPushButton('Animation', self)
+        self.sample_animation_btn = QPushButton('Stream', self)
         self.sample_animation_btn.setCheckable(True)
         self.sample_animation_btn.clicked.connect(self.plot.RunSampleAnimation)
-        self.sample_animation_btn.setToolTip('Start sample input animation')
+        self.sample_animation_btn.setToolTip(
+            'Start streaming data from the camera')
         self.sample_animation_btn.move(30 + 133 * 3, 620)
         self.sample_animation_btn.resize(100, 30)
 
@@ -88,25 +92,43 @@ class PatternPlot(FigureCanvas):
         self.main = self.fig.add_subplot(10, 10, (1, 10*8-2))
         self.main.imshow(self.data_to_graph)
 
+        # Init cursor annotation
+        self.cursor = matplotlib.widgets.Cursor(self.main, horizOn=True, vertOn=True, useblit=True,
+                                                color='grey', linewidth=0.5)
+        self.target = [90, 150]
+        self.target_lines = []
+        self.ShowTargetLines()
+
         # Calculate maximum value
         max_val = np.amax(self.data_to_graph)
 
         # Initialize column plot
-        self.col_g = self.fig.add_subplot(10, 10, (10, 10*8))
+        self.col_g = self.fig.add_subplot(10, 10, (10, 10*8), sharey=self.main)
         self.col_graph, = self.col_g.plot(
-            self.data_to_graph[:, 150], np.arange(300))  # Display vertically
+            self.data_to_graph[:, self.target[1]], np.arange(300))  # Display vertically
         self.col_g.set_ylim([300, 0])
         self.col_g.set_xlim([max_val + 100, 0])
         self.col_g.yaxis.set_visible(False)
         self.col_g.xaxis.set_visible(False)
+        self.col_g.grid(False)
+
+        # Turn off spines
+        for key, spine in self.col_g.spines.items():
+            spine.set_visible(False)
 
         # Initialize row plot
-        self.row_g = self.fig.add_subplot(10, 10, (10*9+1, 10*10-2))
-        self.row_graph, = self.row_g.plot(self.data_to_graph[150, :])
+        self.row_g = self.fig.add_subplot(
+            10, 10, (10*9+1, 10*10-2), sharex=self.main)
+        self.row_graph, = self.row_g.plot(
+            self.data_to_graph[self.target[0], :])
         self.row_g.set_ylim([0, max_val + 100])
         self.row_g.set_xlim([0, 300])
         self.row_g.yaxis.set_visible(False)
         self.row_g.xaxis.set_visible(False)
+
+        # Turn off spines
+        for key, spine in self.row_g.spines.items():
+            spine.set_visible(False)
 
         # Record coordinates when user clicks on the plot
         self.fig.canvas.mpl_connect('button_press_event', self.OnClick)
@@ -114,10 +136,18 @@ class PatternPlot(FigureCanvas):
         self.draw()
 
     def OnClick(self, event):
-        row = int(event.ydata)
-        self.row_graph.set_ydata(self.data_to_graph[row, :])
-        col = int(event.xdata)
-        self.col_graph.set_xdata(self.data_to_graph[:, col])
+
+        # Update row graph
+        self.target[0] = int(event.ydata)
+        self.row_graph.set_ydata(self.data_to_graph[self.target[0], :])
+
+        # Update column graph
+        self.target[1] = int(event.xdata)
+        self.col_graph.set_xdata(self.data_to_graph[:, self.target[1]])
+
+        # Update target lines
+        self.ShowTargetLines()
+
         self.draw()
 
     def RunSampleAnimation(self):
@@ -125,7 +155,10 @@ class PatternPlot(FigureCanvas):
             self.graph = self.main.imshow(self.data_to_graph)
 
             def UpdateFig(*args):
-                self.data_to_graph = self.parent.scan.GetIntensityMeasurement()
+                if (CAMERA_CONNECTED):
+                    self.data_to_graph = self.parent.scan.GetIntensityMeasurement()
+                else:
+                    self.data_to_graph = np.rot90(self.data_to_graph)
                 self.graph.set_array(self.data_to_graph)
                 return self.graph,
 
@@ -137,3 +170,19 @@ class PatternPlot(FigureCanvas):
         else:
             # Pause animation
             self.animation.pause()
+
+    def ShowTargetLines(self):
+        self.RemoveTargetLines()
+        y_target_line = self.main.axhline(
+            y=self.target[0], color='black', linestyle='-', linewidth=0.5)
+        x_target_line = self.main.axvline(
+            x=self.target[1], color='black', linestyle='-', linewidth=0.5)
+        self.target_lines.append(y_target_line)
+        self.target_lines.append(x_target_line)
+
+        self.draw()
+
+    def RemoveTargetLines(self):
+        for target_line in self.target_lines:
+            target_line.remove()
+        self.target_lines = []
