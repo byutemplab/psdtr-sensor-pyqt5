@@ -13,13 +13,15 @@ import matplotlib.colors
 import matplotlib.widgets
 import numpy as np
 
-from .libHeLIC import LibHeLIC
+from .imageprocessing import Scan
 
 
 class CameraTab(QWidget):
     def __init__(self):
         super().__init__()
         self.InitUI()
+        self.scan = Scan()
+        self.scan.InitCamera()
 
     def InitUI(self):
         # Tab header
@@ -123,13 +125,13 @@ class PatternPlot(FigureCanvas):
             self.graph = self.main.imshow(self.data_to_graph)
 
             def UpdateFig(*args):
-                self.data_to_graph = np.rot90(self.data_to_graph)
+                self.data_to_graph = self.parent.scan.GetIntensityMeasurement()
                 self.graph.set_array(self.data_to_graph)
                 return self.graph,
 
             # Set animation
             self.animation = matplotlib.animation.FuncAnimation(
-                self.fig, UpdateFig, interval=1000, blit=True)
+                self.fig, UpdateFig, interval=200, blit=True)
 
             self.draw()
         else:
