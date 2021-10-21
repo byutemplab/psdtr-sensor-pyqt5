@@ -109,18 +109,6 @@ class PatternPlot(FigureCanvas):
         self.main = self.fig.add_subplot(10, 10, (1, 10*8-2))
         self.main.imshow(self.data_to_graph)
 
-        # Find dot position
-        # image = self.data_to_graph.astype('uint8')
-        # circles = cv2.HoughCircles(image, cv2.HOUGH_GRADIENT, 1, 100)
-        # print(circles)
-
-        # if circles is not None:
-        #     # convert the (x, y) coordinates and radius of the circles to integers
-        #     circles = np.round(circles[0, :]).astype("int")
-        #     for (x, y, r) in circles:
-        #         self.main.add_patch(
-        #             matplotlib.pyplot.Circle((x, y), r, fill=False))
-
         # Init cursor annotation
         self.cursor = matplotlib.widgets.Cursor(self.main, horizOn=True, vertOn=True, useblit=True,
                                                 color='grey', linewidth=0.5, linestyle='dotted')

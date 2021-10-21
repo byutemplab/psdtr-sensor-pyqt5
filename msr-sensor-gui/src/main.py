@@ -7,6 +7,7 @@ from PyQt5.QtCore import *
 import styles
 from projector.projector import ProjectorTab
 from camera.camera import CameraTab
+from analysis.analysis import AnalysisTab
 
 
 class App(styles.QCustomTabWidget):
@@ -32,6 +33,10 @@ class App(styles.QCustomTabWidget):
         self.camera_tab = CameraTab()
         self.addTab(self.camera_tab, QIcon(
             "icons/camera-icon.png"), "Heliotis Camera")
+
+        self.analysis_tab = AnalysisTab()
+        self.addTab(self.analysis_tab, QIcon(
+            "icons/analysis-icon.png"), "Data Analysis")
 
         self.show()
 
