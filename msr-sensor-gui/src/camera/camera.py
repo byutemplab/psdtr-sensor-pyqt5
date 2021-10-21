@@ -12,10 +12,13 @@ import matplotlib.animation
 import matplotlib.colors
 import matplotlib.widgets
 import numpy as np
+from datetime import datetime
+
+import cv2
 
 from .imageprocessing import Scan
 
-CAMERA_CONNECTED = False
+CAMERA_CONNECTED = True
 
 
 class CameraTab(QWidget):
@@ -51,6 +54,14 @@ class CameraTab(QWidget):
         self.plot.setGraphicsEffect(shadow)
 
         # Start/stop pattern
+        self.save_btn = QPushButton('Save file', self)
+        self.save_btn.clicked.connect(self.SaveStream)
+        self.save_btn.setToolTip(
+            'Save streaming data')
+        self.save_btn.move(30 + 133 * 2, 620)
+        self.save_btn.resize(100, 30)
+
+        # Start/stop pattern
         self.sample_animation_btn = QPushButton('Stream', self)
         self.sample_animation_btn.setCheckable(True)
         self.sample_animation_btn.clicked.connect(self.plot.RunSampleAnimation)
@@ -60,6 +71,12 @@ class CameraTab(QWidget):
         self.sample_animation_btn.resize(100, 30)
 
         self.show()
+
+    def SaveStream(self):
+        date = datetime.now().strftime("%Y_%m_%d-%I_%M_%S_%p")
+        path = os.path.join(
+            'camera\logs', 'intensity_data_list_' + date + '.npy')
+        self.scan.SaveScansArray(path)
 
 
 class PatternPlot(FigureCanvas):
@@ -91,6 +108,18 @@ class PatternPlot(FigureCanvas):
         # Initialize main plot
         self.main = self.fig.add_subplot(10, 10, (1, 10*8-2))
         self.main.imshow(self.data_to_graph)
+
+        # Find dot position
+        # image = self.data_to_graph.astype('uint8')
+        # circles = cv2.HoughCircles(image, cv2.HOUGH_GRADIENT, 1, 100)
+        # print(circles)
+
+        # if circles is not None:
+        #     # convert the (x, y) coordinates and radius of the circles to integers
+        #     circles = np.round(circles[0, :]).astype("int")
+        #     for (x, y, r) in circles:
+        #         self.main.add_patch(
+        #             matplotlib.pyplot.Circle((x, y), r, fill=False))
 
         # Init cursor annotation
         self.cursor = matplotlib.widgets.Cursor(self.main, horizOn=True, vertOn=True, useblit=True,
@@ -160,6 +189,8 @@ class PatternPlot(FigureCanvas):
                 else:
                     self.data_to_graph = np.rot90(self.data_to_graph)
                 self.graph.set_array(self.data_to_graph)
+                self.UpdateGraphLimits()
+                self.ShowTargetLines()
                 return self.graph,
 
             # Set animation
@@ -186,3 +217,11 @@ class PatternPlot(FigureCanvas):
         for target_line in self.target_lines:
             target_line.remove()
         self.target_lines = []
+
+    def UpdateGraphLimits(self):
+        # Calculate maximum and minimum values
+        max_val = np.amax(self.data_to_graph)
+        min_val = np.amin(self.data_to_graph)
+
+        self.col_g.set_xlim([max_val * 1.1, min_val * 1.1])
+        self.row_g.set_ylim([min_val * 1.1, max_val * 1.1])

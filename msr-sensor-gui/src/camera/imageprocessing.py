@@ -7,10 +7,12 @@ from __future__ import division, print_function
 from .libHeLIC import LibHeLIC
 import numpy as np
 import ctypes as ct
+from datetime import datetime
 
 
 class Scan():
     def __init__(self):
+        self.scans_array = []
         return None
 
     def InitCamera(self):
@@ -65,4 +67,11 @@ class Scan():
         # Sum data from all frames, skip frame 0
         intensity = data[1:, :, :, 0].sum(axis=0, dtype=np.int16)
 
+        # Save in array
+        self.scans_array.append(intensity)
+
         return intensity
+
+    def SaveScansArray(self, path):
+        # Save data list to a npy file
+        np.save(path, self.scans_array)
