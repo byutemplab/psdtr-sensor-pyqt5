@@ -71,40 +71,50 @@ class PatternPlot(FigureCanvas):
     def plot(self):
 
         # Import data
-        path = "camera\logs\intensity_img_2021_10_12-05_18_58_PM.npy"
-        data = np.load(path)
+        path = "camera\logs\sequence_sample_1.npy"
+        self.scan_array = (1 * (np.load(path) < 0)).astype('uint8')
 
-        # Start by showing frame 0 and I parameter
-        frameNum = 0
-        IQProperty = 0
-        self.data_to_graph = data[frameNum, :, :, IQProperty]
+        # Start by showing frame 0 and I parameter\
+        self.data_to_graph = self.scan_array[0]
 
         # Initialize main plot
-        self.main = self.fig.add_subplot(10, 10, (1, 10*8-2))
-        self.main.imshow(self.data_to_graph)
+        self.main = self.fig.add_subplot()
+        self.main_graph = self.main.imshow(self.data_to_graph)
 
-        # Find dot position
-        # image = self.data_to_graph.astype('uint8')
-        # circles = cv2.HoughCircles(image, cv2.HOUGH_GRADIENT, 1, 100)
-        # print(circles)
+        # Find biggest blub and draw a contour box
+        x, y, w, h = self.FindBiggestBlob(self.data_to_graph)
+        self.contour_box = self.main.add_patch(
+            matplotlib.patches.Rectangle((x, y), w, h, fill=False, color='g'))
 
-        # if circles is not None:
-        #     # convert the (x, y) coordinates and radius of the circles to integers
-        #     circles = np.round(circles[0, :]).astype("int")
-        #     for (x, y, r) in circles:
-        #         self.main.add_patch(
-        #             matplotlib.pyplot.Circle((x, y), r, fill=False))
+        # Show value when user clicks
+        self.fig.canvas.mpl_connect('button_press_event', self.OnClick)
 
         self.draw()
 
+    def OnClick(self, event):
+        x = int(event.xdata)
+        y = int(event.ydata)
+        value = self.data_to_graph[y, x]
+        print(value)
+
     def RunSampleAnimation(self):
         if(self.parent.sample_animation_btn.isChecked() == True):
-            self.graph = self.main.imshow(self.data_to_graph)
+
+            self.cnt = 0
 
             def UpdateFig(*args):
-                self.data_to_graph = np.rot90(self.data_to_graph)
-                self.graph.set_array(self.data_to_graph)
-                return self.graph,
+                self.cnt += 1
+
+                # Update array frame
+                frame = self.cnt % self.scan_array.shape[0]
+                self.data_to_graph = self.scan_array[frame]
+                self.main_graph.set_array(self.data_to_graph)
+
+                # Update blob position
+                x, y, w, h = self.FindBiggestBlob(self.data_to_graph)
+                self.contour_box.set_bounds(x, y, w, h)
+
+                return self.main_graph, self.contour_box,
 
             # Set animation
             self.animation = matplotlib.animation.FuncAnimation(
@@ -114,3 +124,14 @@ class PatternPlot(FigureCanvas):
         else:
             # Pause animation
             self.animation.pause()
+
+    def FindBiggestBlob(self, image):
+        # Get all contours
+        contours, hierarchy = cv2.findContours(
+            image, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+
+        # Find largest contour
+        c = max(contours, key=cv2.contourArea)
+
+        # Return coordinates
+        return cv2.boundingRect(c)
