@@ -44,11 +44,11 @@ class AnalysisTab(QWidget):
         self.plot.setGraphicsEffect(shadow)
 
         # Start/stop pattern
-        self.sample_animation_btn = QPushButton('Stream', self)
+        self.sample_animation_btn = QPushButton('Demo', self)
         self.sample_animation_btn.setCheckable(True)
         self.sample_animation_btn.clicked.connect(self.plot.RunSampleAnimation)
         self.sample_animation_btn.setToolTip(
-            'Start showing data')
+            'Start showing sample data')
         self.sample_animation_btn.move(30 + 133 * 3, 620)
         self.sample_animation_btn.resize(100, 30)
 
