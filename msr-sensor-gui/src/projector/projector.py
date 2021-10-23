@@ -17,6 +17,14 @@ from .pycrafter6500 import dmd
 RES_Y = 1920
 RES_X = 1080
 
+# Custom style for plot navigation toolbar
+
+
+class PlotNavigation(NavigationToolbar):
+    # only display the buttons we need
+    toolitems = [t for t in NavigationToolbar.toolitems if
+                 t[0] in ('Home', 'Pan', 'Zoom', 'Subplots')]
+
 
 class ProjectorTab(QWidget):
     def __init__(self):
@@ -39,7 +47,7 @@ class ProjectorTab(QWidget):
         self.plot.move(30, 80)
 
         # Navigation toolbar for graph
-        self.toolbar = NavigationToolbar(self.plot, self)
+        self.toolbar = PlotNavigation(self.plot, self)
         self.toolbar.move(22, 400)
 
         # Set shadow behind widget

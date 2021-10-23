@@ -18,7 +18,7 @@ import cv2
 
 from .imageprocessing import Scan
 
-CAMERA_CONNECTED = True
+CAMERA_CONNECTED = False
 
 
 class CameraTab(QWidget):
@@ -45,6 +45,7 @@ class CameraTab(QWidget):
         # Navigation toolbar for graph
         self.toolbar = NavigationToolbar(self.plot, self)
         self.toolbar.move(22, 600)
+        self.toolbar.resize(10, 10)
 
         # Set shadow behind widget
         shadow = QGraphicsDropShadowEffect()
@@ -113,8 +114,10 @@ class PatternPlot(FigureCanvas):
         self.cursor = matplotlib.widgets.Cursor(self.main, horizOn=True, vertOn=True, useblit=True,
                                                 color='grey', linewidth=0.5, linestyle='dotted')
         self.target = [90, 150]
-        self.target_lines = []
-        self.ShowTargetLines()
+        self.y_target_line = self.main.axhline(
+            y=self.target[0], color='black', linestyle='dotted', linewidth=0.5)
+        self.x_target_line = self.main.axvline(
+            x=self.target[1], color='black', linestyle='dotted', linewidth=0.5)
 
         # Calculate maximum value
         max_val = np.amax(self.data_to_graph)
@@ -163,7 +166,7 @@ class PatternPlot(FigureCanvas):
         self.col_graph.set_xdata(self.data_to_graph[:, self.target[1]])
 
         # Update target lines
-        self.ShowTargetLines()
+        self.UpdateTargetLines()
 
         self.draw()
 
@@ -178,7 +181,6 @@ class PatternPlot(FigureCanvas):
                     self.data_to_graph = np.rot90(self.data_to_graph)
                 self.graph.set_array(self.data_to_graph)
                 self.UpdateGraphLimits()
-                self.ShowTargetLines()
                 return self.graph,
 
             # Set animation
@@ -190,21 +192,11 @@ class PatternPlot(FigureCanvas):
             # Pause animation
             self.animation.pause()
 
-    def ShowTargetLines(self):
-        self.RemoveTargetLines()
-        y_target_line = self.main.axhline(
-            y=self.target[0], color='black', linestyle='dotted', linewidth=0.5)
-        x_target_line = self.main.axvline(
-            x=self.target[1], color='black', linestyle='dotted', linewidth=0.5)
-        self.target_lines.append(y_target_line)
-        self.target_lines.append(x_target_line)
+    def UpdateTargetLines(self):
+        self.y_target_line.set_ydata(self.target[0])
+        self.x_target_line.set_xdata(self.target[1])
 
         self.draw()
-
-    def RemoveTargetLines(self):
-        for target_line in self.target_lines:
-            target_line.remove()
-        self.target_lines = []
 
     def UpdateGraphLimits(self):
         # Calculate maximum and minimum values
