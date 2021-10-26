@@ -13,6 +13,8 @@ import numpy as np
 
 import cv2
 
+from .scanprocessing import Scan
+
 
 class AnalysisTab(QWidget):
     def __init__(self):
@@ -74,17 +76,32 @@ class PatternPlot(FigureCanvas):
         path = "camera\logs\sequence_sample_1.npy"
         self.scan_array = (1 * (np.load(path) < 0)).astype('uint8')
 
+        # Process scan data
+        self.scan = Scan(self.scan_array)
+        self.intensity_time = self.scan.GetIntensityOverTime()
+
         # Start by showing frame 0 and I parameter\
         self.data_to_graph = self.scan_array[0]
 
         # Initialize main plot
-        self.main = self.fig.add_subplot()
+        self.main = self.fig.add_subplot(3, 3, (1, 6))
         self.main_graph = self.main.imshow(self.data_to_graph)
 
         # Find biggest blub and draw a contour box
         x, y, w, h = self.FindBiggestBlob(self.data_to_graph)
         self.contour_box = self.main.add_patch(
             matplotlib.patches.Rectangle((x, y), w, h, fill=False, color='g'))
+
+        # Initialize intensity-time plot
+        self.intensity_time_ax = self.fig.add_subplot(3, 3, (7, 9))
+        self.intensity_time_graph = self.intensity_time_ax.plot(
+            self.intensity_time, 'o-')
+        self.intensity_time_ax.set_xlabel('Frame')
+        self.intensity_time_ax.set_ylabel('Intensity')
+
+        # Hide upper and right axes of intensity-time plot
+        self.intensity_time_ax.spines['right'].set_visible(False)
+        self.intensity_time_ax.spines['top'].set_visible(False)
 
         # Show value when user clicks
         self.fig.canvas.mpl_connect('button_press_event', self.OnClick)
