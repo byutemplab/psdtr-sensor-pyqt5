@@ -4,7 +4,6 @@ import cv2
 
 class Scan:
     def __init__(self, array):
-
         self.array = array
         self.num_frames = array.shape[0]
 
