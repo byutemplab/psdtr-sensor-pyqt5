@@ -8,6 +8,7 @@ import styles
 from projector.projector import ProjectorTab
 from camera.camera import CameraTab
 from analysis.analysis import AnalysisTab
+from signalgenerator.signalgenerator import SignalGeneratorTab
 
 
 class App(styles.QCustomTabWidget):
@@ -37,6 +38,10 @@ class App(styles.QCustomTabWidget):
         self.analysis_tab = AnalysisTab()
         self.addTab(self.analysis_tab, QIcon(
             "icons/analysis-icon.png"), "Data Analysis")
+
+        self.signal_generator_tab = SignalGeneratorTab()
+        self.addTab(self.signal_generator_tab, QIcon(
+            "icons/signal-generator-icon.png"), "Signal Generator")
 
         self.show()
 
