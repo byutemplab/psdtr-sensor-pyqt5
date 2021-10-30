@@ -27,8 +27,8 @@ cmd = "C1:WVDT WVNM,santi,TYPE,5,LENGTH,32KB,FREQ,1000.0,AMPL,2,OFST,0,PHASE,0.0
 vi.write(cmd)
 # the next commands should be terminated with newline char
 vi.write_termination = '\n'
-# vi.write("C1:ARWV INDEX, 101")  # Set the waveform to be the one just sent
-vi.write("C1:MDWV AM, MDSP,SINE")
+vi.write("C1:ARWV NAME, santi")  # Set the waveform to be the one just sent
+# vi.write("C1:MDWV AM, MDSP,SINE")
 
 
 # the next commands should not be terminated with newline char
