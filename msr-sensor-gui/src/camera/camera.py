@@ -153,6 +153,7 @@ class PatternPlot(FigureCanvas):
         # Record coordinates when user clicks on the plot
         self.fig.canvas.mpl_connect('button_press_event', self.OnClick)
 
+        self.figure.tight_layout()
         self.draw()
 
     def OnClick(self, event):

@@ -5,6 +5,8 @@ from PyQt5.QtCore import *
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 
+import numpy as np
+
 
 class SignalGeneratorTab(QWidget):
     def __init__(self):
@@ -45,6 +47,9 @@ class SignalGeneratorTab(QWidget):
         self.waveform = QComboBox(self)
         self.waveform.move(30, 430)
         self.waveform.resize(100, 30)
+        self.waveform.addItem("Sine")
+        self.waveform.addItem("Square")
+        self.waveform.addItem("Triangle")
         # self.waveform.valueChanged.connect()
 
         # Amplitude label
@@ -118,4 +123,31 @@ class PatternPlot(FigureCanvas):
         # Initialize axes
         self.ax = self.figure.add_subplot(111)
 
+        # Set axes labels
+        self.ax.set_xlabel('Time [s]')
+        self.ax.set_ylabel('Amplitude [V]')
+
+        # Plot sine wave
+        self.ax.plot(np.arange(0, 2 * np.pi, 0.1),
+                     np.sin(np.arange(0, 2 * np.pi, 0.1)))
+
+        self.figure.tight_layout()
         self.draw()
+
+
+def CreateSignal(waveform, amplitude, offset, frequency):
+    start = 0
+    stop = 1 / frequency          # Only show one period
+    step = 0.1
+    x = np.arrange(start, stop, step)
+
+    if waveform == "sine":
+        y = amplitude * np.sin(2 * np.pi * frequency * x) + offset
+
+    return x, y
+    # # Create square wave
+    # elif waveform == "Square":
+    #     return amplitude * np.sign(np.sin(2 * np.pi * frequency * t)) + offset
+    # # Create triangle wave
+    # elif waveform == "Triangle":
+    #     return amplitude * np.abs(np.sin(2 * np.pi * frequency * t)) + offset
