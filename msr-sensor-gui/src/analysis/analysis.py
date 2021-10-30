@@ -106,6 +106,7 @@ class PatternPlot(FigureCanvas):
         # Show value when user clicks
         self.fig.canvas.mpl_connect('button_press_event', self.OnClick)
 
+        self.figure.tight_layout()
         self.draw()
 
     def OnClick(self, event):

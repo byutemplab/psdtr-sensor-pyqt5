@@ -83,7 +83,8 @@ class SignalGeneratorTab(QWidget):
         self.amplitude = QDoubleSpinBox(self)
         self.amplitude.move(30 + 133 * 2, 430)
         self.amplitude.resize(100, 30)
-        self.amplitude.setRange(0, 10000)
+        # Max voltage allowed by the device is 20V
+        self.amplitude.setRange(0, 20)
         self.amplitude.setValue(self.signal.amplitude)
         self.amplitude.valueChanged.connect(self.OnChangeAmplitude)
 
@@ -97,7 +98,8 @@ class SignalGeneratorTab(QWidget):
         self.offset = QDoubleSpinBox(self)
         self.offset.move(30 + 133 * 3, 430)
         self.offset.resize(100, 30)
-        self.offset.setRange(-10000, 10000)
+        # Max offset allowed by the device is 10V
+        self.offset.setRange(-10, 10)
         self.offset.setValue(self.signal.offset)
         self.offset.valueChanged.connect(self.OnChangeOffset)
 
