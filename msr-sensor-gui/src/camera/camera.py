@@ -108,11 +108,11 @@ class PatternPlot(FigureCanvas):
 
         # Initialize main plot
         self.main = self.fig.add_subplot(10, 10, (1, 10*8-2))
-        self.main.imshow(self.data_to_graph)
+        self.graph = self.main.imshow(self.data_to_graph)
 
         # Init cursor annotation
-        self.cursor = matplotlib.widgets.Cursor(self.main, horizOn=True, vertOn=True, useblit=True,
-                                                color='grey', linewidth=0.5, linestyle='dotted')
+        # self.cursor = matplotlib.widgets.Cursor(self.main, horizOn=True, vertOn=True, useblit=True,
+        #                                         color='grey', linewidth=0.5, linestyle='dotted')
         self.target = [90, 150]
         self.y_target_line = self.main.axhline(
             y=self.target[0], color='black', linestyle='dotted', linewidth=0.5)
@@ -173,16 +173,16 @@ class PatternPlot(FigureCanvas):
 
     def RunSampleAnimation(self):
         if(self.parent.sample_animation_btn.isChecked() == True):
-            self.graph = self.main.imshow(self.data_to_graph)
 
             def UpdateFig(*args):
                 if (CAMERA_CONNECTED):
                     self.data_to_graph = self.parent.scan.GetIntensityMeasurement()
                 else:
                     self.data_to_graph = np.rot90(self.data_to_graph)
+
                 self.graph.set_array(self.data_to_graph)
-                self.UpdateGraphLimits()
-                return self.graph,
+
+                return self.graph, self.x_target_line, self.y_target_line,
 
             # Set animation
             self.animation = matplotlib.animation.FuncAnimation(
