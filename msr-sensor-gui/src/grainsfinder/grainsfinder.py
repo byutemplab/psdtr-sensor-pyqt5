@@ -5,6 +5,8 @@ from PyQt5.QtCore import *
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 
+from .pipeline import GrainBoundariesMap
+
 import numpy as np
 
 
@@ -23,7 +25,11 @@ class UploadButton(QPushButton):
     def dropEvent(self, e):
         m = e.mimeData()
         if m.hasUrls():
-            self.parent().label.setPixmap(QPixmap(m.urls()[0].toLocalFile()))
+            image = m.urls()[0].toLocalFile()
+            map = GrainBoundariesMap(image)
+            self.parent().label_raw.setPixmap(QPixmap(map.image))
+            self.parent().label_preprocessed.setPixmap(QPixmap(map.GetContours()))
+            self.parent().label_preprocessed_2.setPixmap(QPixmap(map.DetectEdges()))
 
 
 class GrainsFinderTab(QWidget):
@@ -47,6 +53,14 @@ class GrainsFinderTab(QWidget):
         button.setIconSize(QSize(100, 100))
         button.move(30, 70)
 
-        self.label = QLabel(self)
-        self.label.setPixmap(QPixmap('icons/upload.png'))
-        self.label.move(30, 180)
+        self.label_raw = QLabel(self)
+        self.label_raw.move(30, 200)
+        self.label_raw.resize(200, 200)
+
+        self.label_preprocessed = QLabel(self)
+        self.label_preprocessed.move(250, 200)
+        self.label_preprocessed.resize(200, 200)
+
+        self.label_preprocessed_2 = QLabel(self)
+        self.label_preprocessed_2.move(30, 420)
+        self.label_preprocessed_2.resize(200, 200)
