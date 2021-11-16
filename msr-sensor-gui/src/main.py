@@ -9,6 +9,7 @@ from projector.projector import ProjectorTab
 from camera.camera import CameraTab
 from analysis.analysis import AnalysisTab
 from signalgenerator.signalgenerator import SignalGeneratorTab
+from grainsfinder.grainsfinder import GrainsFinderTab
 
 
 class App(styles.QCustomTabWidget):
@@ -42,6 +43,10 @@ class App(styles.QCustomTabWidget):
         self.signal_generator_tab = SignalGeneratorTab()
         self.addTab(self.signal_generator_tab, QIcon(
             "icons/signal-generator-icon.png"), "Signal Generator")
+
+        self.grains_finder_tab = GrainsFinderTab()
+        self.addTab(self.grains_finder_tab, QIcon(
+            "icons/grains-finder-icon.png"), "Grains Finder")
 
         self.show()
 
