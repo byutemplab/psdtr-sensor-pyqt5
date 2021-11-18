@@ -21,7 +21,7 @@ from .imageprocessing import Scan
 CAMERA_CONNECTED = False
 
 
-class CameraTab(QWidget):
+class HelicamTab(QWidget):
     def __init__(self):
         super().__init__()
         if (CAMERA_CONNECTED):
@@ -76,7 +76,7 @@ class CameraTab(QWidget):
     def SaveStream(self):
         date = datetime.now().strftime("%Y_%m_%d-%I_%M_%S_%p")
         path = os.path.join(
-            'camera\logs', 'intensity_data_list_' + date + '.npy')
+            'helicam\logs', 'intensity_data_list_' + date + '.npy')
         self.scan.SaveScansArray(path)
 
 
@@ -98,7 +98,7 @@ class PatternPlot(FigureCanvas):
     def plot(self):
 
         # Import data
-        path = "camera\logs\intensity_img_2021_10_12-05_18_58_PM.npy"
+        path = "helicam\logs\intensity_img_2021_10_12-05_18_58_PM.npy"
         data = np.load(path)
 
         # Start by showing frame 0 and I parameter

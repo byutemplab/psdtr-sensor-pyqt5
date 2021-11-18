@@ -34,8 +34,8 @@ class UploadButton(QPushButton):
             # QPixmap(self.parent().map.thresholded_path))
             self.parent().label_preprocessed_2.setPixmap(
                 QPixmap(self.parent().map.contours_path))
-            self.parent().label_preprocessed_3.setPixmap(
-                QPixmap(self.parent().map.big_contours_path))
+            # self.parent().label_preprocessed_3.setPixmap(
+            # QPixmap(self.parent().map.big_contours_path))
 
 
 class GrainsFinderTab(QWidget):
@@ -98,9 +98,9 @@ class GrainsFinderTab(QWidget):
         self.label_preprocessed_2.move(30, 420)
         self.label_preprocessed_2.resize(200, 200)
 
-        self.label_preprocessed_3 = QLabel(self)
-        self.label_preprocessed_3.move(250, 420)
-        self.label_preprocessed_3.resize(200, 200)
+        # self.label_preprocessed_3 = QLabel(self)
+        # self.label_preprocessed_3.move(250, 420)
+        # self.label_preprocessed_3.resize(200, 200)
 
     def UpdateThreshold(self):
         if(self.map is not None):
@@ -110,5 +110,5 @@ class GrainsFinderTab(QWidget):
             # QPixmap(self.map.thresholded_path))
             self.label_preprocessed_2.setPixmap(
                 QPixmap(self.map.contours_path))
-            self.label_preprocessed_3.setPixmap(
-                QPixmap(self.map.big_contours_path))
+            # self.label_preprocessed_3.setPixmap(
+            #     QPixmap(self.map.big_contours_path))

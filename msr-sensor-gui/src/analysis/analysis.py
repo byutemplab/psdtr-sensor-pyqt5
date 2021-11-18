@@ -73,7 +73,7 @@ class PatternPlot(FigureCanvas):
     def plot(self):
 
         # Import data
-        path = "camera\logs\sequence_sample_1.npy"
+        path = "helicam\logs\sequence_sample_1.npy"
         self.scan_array = (1 * (np.load(path) < 0)).astype('uint8')
 
         # Process scan data
