@@ -7,6 +7,7 @@ from PyQt5.QtCore import *
 import styles
 from projector.projector import ProjectorTab
 from helicam.helicam import HelicamTab
+from cmoscamera.cmoscamera import CMOSCameraTab
 from analysis.analysis import AnalysisTab
 from signalgenerator.signalgenerator import SignalGeneratorTab
 from grainsfinder.grainsfinder import GrainsFinderTab
@@ -35,6 +36,10 @@ class App(styles.QCustomTabWidget):
         self.helicam_tab = HelicamTab()
         self.addTab(self.helicam_tab, QIcon(
             "icons/camera-icon.png"), "Heliotis Camera")
+
+        self.cmoscamera_tab = CMOSCameraTab()
+        self.addTab(self.cmoscamera_tab, QIcon(
+            "icons/camera-icon.png"), "CMOS Camera")
 
         self.analysis_tab = AnalysisTab()
         self.addTab(self.analysis_tab, QIcon(
