@@ -8,4 +8,4 @@ Gain: 100
 HighSpeedMode: 0
 Offset: 20
 OverCLK: 0
-Temperature: 275
+Temperature: 237
