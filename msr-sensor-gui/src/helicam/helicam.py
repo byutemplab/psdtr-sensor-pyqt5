@@ -54,7 +54,7 @@ class HelicamTab(QWidget):
         shadow.setColor(QColor(20, 20, 20, 30))
         self.plot.setGraphicsEffect(shadow)
 
-        # Start/stop pattern
+        # Save data
         self.save_btn = QPushButton('Save file', self)
         self.save_btn.clicked.connect(self.SaveStream)
         self.save_btn.setToolTip(
