@@ -1,4 +1,4 @@
-# Molten Salt Reactor Sensor - Graphical Interface v1
+# Parallel Spatial Domain Thermoreflectance Sensor - Graphical Interface v1
 
 ## Currently includes:
 
