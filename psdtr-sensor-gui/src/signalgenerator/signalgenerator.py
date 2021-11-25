@@ -26,7 +26,7 @@ class SignalGeneratorTab(QWidget):
         self.header = QLabel(self)
         self.header.setFont(font)
         self.header.setText("Signal Generator Settings")
-        self.header.move(30, 20)
+        self.header.setContentsMargins(0, 10, 0, 10)
 
         # Pattern preview from matplotlib
         self.plot = PatternPlot(self, width=5, height=3)
@@ -44,10 +44,10 @@ class SignalGeneratorTab(QWidget):
         font.setPointSize(8)
 
         # Waveform type label
-        self.header = QLabel(self)
-        self.header.setFont(font)
-        self.header.setText("Waveform")
-        self.header.move(30, 410)
+        self.header_waveform = QLabel(self)
+        self.header_waveform.setFont(font)
+        self.header_waveform.setText("Waveform")
+        self.header_waveform.move(30, 410)
 
         # Waveform type
         self.waveform = QComboBox(self)
@@ -60,10 +60,10 @@ class SignalGeneratorTab(QWidget):
             self.OnChangeWaveform)
 
         # Frequency label
-        self.header = QLabel(self)
-        self.header.setFont(font)
-        self.header.setText("Frequency (Hz)")
-        self.header.move(30 + 133 * 1, 410)
+        self.header_frequency = QLabel(self)
+        self.header_frequency.setFont(font)
+        self.header_frequency.setText("Frequency (Hz)")
+        self.header_frequency.move(30 + 133 * 1, 410)
 
         # Frequency label
         self.frequency = QSpinBox(self)
@@ -74,10 +74,10 @@ class SignalGeneratorTab(QWidget):
         self.frequency.valueChanged.connect(self.OnChangeFrequency)
 
         # Amplitude label
-        self.header = QLabel(self)
-        self.header.setFont(font)
-        self.header.setText("Amplitude (V)")
-        self.header.move(30 + 133 * 2, 410)
+        self.header_amplitude = QLabel(self)
+        self.header_amplitude.setFont(font)
+        self.header_amplitude.setText("Amplitude (V)")
+        self.header_amplitude.move(30 + 133 * 2, 410)
 
         # Amplitude
         self.amplitude = QDoubleSpinBox(self)
@@ -89,10 +89,10 @@ class SignalGeneratorTab(QWidget):
         self.amplitude.valueChanged.connect(self.OnChangeAmplitude)
 
         # Offset label
-        self.header = QLabel(self)
-        self.header.setFont(font)
-        self.header.setText("Offset (V)")
-        self.header.move(30 + 133 * 3, 410)
+        self.header_offset = QLabel(self)
+        self.header_offset.setFont(font)
+        self.header_offset.setText("Offset (V)")
+        self.header_offset.move(30 + 133 * 3, 410)
 
         # Offset label
         self.offset = QDoubleSpinBox(self)
@@ -104,10 +104,10 @@ class SignalGeneratorTab(QWidget):
         self.offset.valueChanged.connect(self.OnChangeOffset)
 
         # Phase label
-        self.header = QLabel(self)
-        self.header.setFont(font)
-        self.header.setText("Phase (deg)")
-        self.header.move(30, 480)
+        self.header_phase = QLabel(self)
+        self.header_phase.setFont(font)
+        self.header_phase.setText("Phase (deg)")
+        self.header_phase.move(30, 480)
 
         # Phase
         self.phase = QDoubleSpinBox(self)
@@ -123,6 +123,28 @@ class SignalGeneratorTab(QWidget):
         self.set_signal.move(30 + 133 * 3, 500)
         self.set_signal.resize(100, 30)
         self.set_signal.clicked.connect(self.SetSignal)
+
+        # Set layout
+        self.layout = QGridLayout()
+        self.setLayout(self.layout)
+        self.layout.setColumnStretch(0, 1)
+        self.layout.setColumnStretch(5, 1)
+        self.layout.setRowMinimumHeight(0, 30)
+        self.layout.addWidget(self.header, 0, 1, 2, 4, Qt.AlignTop)
+        self.layout.addWidget(self.plot, 2, 1, 2, 4)
+        self.layout.setRowMinimumHeight(4, 30)
+        self.layout.addWidget(self.header_waveform, 5, 1)
+        self.layout.addWidget(self.waveform, 6, 1)
+        self.layout.addWidget(self.header_frequency, 5, 2)
+        self.layout.addWidget(self.frequency, 6, 2)
+        self.layout.addWidget(self.header_amplitude, 5, 3)
+        self.layout.addWidget(self.amplitude, 6, 3)
+        self.layout.addWidget(self.header_offset, 5, 4)
+        self.layout.addWidget(self.offset, 6, 4)
+        self.layout.addWidget(self.header_phase, 7, 1)
+        self.layout.addWidget(self.phase, 8, 1)
+        self.layout.addWidget(self.set_signal, 8, 4)
+        self.layout.setRowStretch(9, 1)
 
         self.show()
 

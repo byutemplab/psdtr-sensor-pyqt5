@@ -36,7 +36,7 @@ class HelicamTab(QWidget):
         self.header = QLabel(self)
         self.header.setFont(font)
         self.header.setText("Camera Settings")
-        self.header.move(30, 20)
+        self.header.setContentsMargins(0, 10, 0, 10)
 
         # Pattern preview from matplotlib
         self.plot = PatternPlot(self, width=5, height=5)
@@ -70,6 +70,19 @@ class HelicamTab(QWidget):
             'Start streaming data from the camera')
         self.sample_animation_btn.move(30 + 133 * 3, 620)
         self.sample_animation_btn.resize(100, 30)
+
+        # Set layout
+        self.layout = QGridLayout()
+        self.setLayout(self.layout)
+        self.layout.setColumnStretch(0, 1)
+        self.layout.setColumnStretch(5, 1)
+        self.layout.setRowMinimumHeight(0, 30)
+        self.layout.addWidget(self.header, 0, 1, 2, 4, Qt.AlignTop)
+        self.layout.addWidget(self.plot, 2, 1, 4, 4)
+        self.layout.addWidget(self.toolbar, 6, 1, 2, 4)
+        self.layout.addWidget(self.save_btn, 8, 3, 2, 1)
+        self.layout.addWidget(self.sample_animation_btn, 8, 4, 2, 1)
+        self.layout.setRowStretch(9, 1)
 
         self.show()
 

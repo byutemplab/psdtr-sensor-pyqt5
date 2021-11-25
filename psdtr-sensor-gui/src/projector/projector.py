@@ -40,7 +40,7 @@ class ProjectorTab(QWidget):
         self.header = QLabel(self)
         self.header.setFont(font)
         self.header.setText("Projector Settings")
-        self.header.move(30, 20)
+        self.header.setContentsMargins(0, 10, 0, 10)
 
         # Pattern preview from matplotlib
         self.plot = PatternPlot(self, width=5, height=3)
@@ -62,10 +62,10 @@ class ProjectorTab(QWidget):
         font.setPointSize(8)
 
         # Number of measurements label
-        self.header = QLabel(self)
-        self.header.setFont(font)
-        self.header.setText("# Measurements")
-        self.header.move(30, 460)
+        self.header_measurements = QLabel(self)
+        self.header_measurements.setFont(font)
+        self.header_measurements.setText("# Measurements")
+        self.header_measurements.move(30, 460)
 
         # Number of measurements
         self.num_measurements = QSpinBox(self)
@@ -76,10 +76,10 @@ class ProjectorTab(QWidget):
         self.num_measurements.valueChanged.connect(self.ChangeNumMeasurements)
 
         # Point diameter label
-        self.header = QLabel(self)
-        self.header.setFont(font)
-        self.header.setText("Point Diameter")
-        self.header.move(30 + 133, 460)
+        self.header_diameter = QLabel(self)
+        self.header_diameter.setFont(font)
+        self.header_diameter.setText("Point Diameter")
+        self.header_diameter.move(30 + 133, 460)
 
         # Point diameter
         self.point_diameter = QSpinBox(self)
@@ -90,10 +90,10 @@ class ProjectorTab(QWidget):
         self.point_diameter.valueChanged.connect(self.ChangePointDiameter)
 
         # Exposure time label
-        self.header = QLabel(self)
-        self.header.setFont(font)
-        self.header.setText("Exposure Time")
-        self.header.move(30 + 133 * 2, 460)
+        self.header_exposure = QLabel(self)
+        self.header_exposure.setFont(font)
+        self.header_exposure.setText("Exposure Time")
+        self.header_exposure.move(30 + 133 * 2, 460)
 
         # Exposure time label
         self.exposure = QSpinBox(self)
@@ -112,10 +112,10 @@ class ProjectorTab(QWidget):
         self.preview_btn.resize(100, 30)
 
         # Trajectory selection label
-        self.header = QLabel(self)
-        self.header.setFont(font)
-        self.header.setText("Pattern Array")
-        self.header.move(30, 530)
+        self.header_trajectory_selection = QLabel(self)
+        self.header_trajectory_selection.setFont(font)
+        self.header_trajectory_selection.setText("Pattern Array")
+        self.header_trajectory_selection.move(30, 530)
 
         # Trajectory selection
         self.trajectory_selection = QComboBox(self)
@@ -125,10 +125,10 @@ class ProjectorTab(QWidget):
             self.ChangeTrajectorySelection)
 
         # New trajectory label
-        self.header = QLabel(self)
-        self.header.setFont(font)
-        self.header.setText("New Trajectory")
-        self.header.move(30 + 133, 530)
+        self.header_new_trajectory = QLabel(self)
+        self.header_new_trajectory.setFont(font)
+        self.header_new_trajectory.setText("New Trajectory")
+        self.header_new_trajectory.move(30 + 133, 530)
 
         # New trajectory button
         self.new_trajectory_btn = QPushButton('+', self)
@@ -139,10 +139,10 @@ class ProjectorTab(QWidget):
         self.new_trajectory_btn.resize(100, 30)
 
         # Select start point label
-        self.header = QLabel(self)
-        self.header.setFont(font)
-        self.header.setText("Starting Point")
-        self.header.move(30 + 133 * 2, 530)
+        self.header_start_point = QLabel(self)
+        self.header_start_point.setFont(font)
+        self.header_start_point.setText("Starting Point")
+        self.header_start_point.move(30 + 133 * 2, 530)
 
         # Select start point
         self.start_point_btn = QPushButton('Select', self)
@@ -154,10 +154,10 @@ class ProjectorTab(QWidget):
         self.start_point_btn.resize(100, 30)
 
         # Select end point label
-        self.header = QLabel(self)
-        self.header.setFont(font)
-        self.header.setText("Ending Point")
-        self.header.move(30 + 133 * 3, 530)
+        self.header_end_point = QLabel(self)
+        self.header_end_point.setFont(font)
+        self.header_end_point.setText("Ending Point")
+        self.header_end_point.move(30 + 133 * 3, 530)
 
         # Select end point
         self.end_point_btn = QPushButton('Select', self)
@@ -174,6 +174,33 @@ class ProjectorTab(QWidget):
         self.send_pattern_btn.setToolTip('Send pattern to projector')
         self.send_pattern_btn.move(30 + 133 * 3, 620)
         self.send_pattern_btn.resize(100, 30)
+
+        # Set layout
+        self.layout = QGridLayout()
+        self.setLayout(self.layout)
+        self.layout.setColumnStretch(0, 1)
+        self.layout.setColumnStretch(5, 1)
+        self.layout.setRowMinimumHeight(0, 30)
+        self.layout.addWidget(self.header, 0, 1, 2, 4, Qt.AlignTop)
+        self.layout.addWidget(self.plot, 2, 1, 2, 4)
+        self.layout.addWidget(self.toolbar, 4, 1, 2, 4)
+        self.layout.addWidget(self.header_measurements, 6, 1)
+        self.layout.addWidget(self.num_measurements, 7, 1)
+        self.layout.addWidget(self.header_diameter, 6, 2)
+        self.layout.addWidget(self.point_diameter, 7, 2)
+        self.layout.addWidget(self.header_exposure, 6, 3)
+        self.layout.addWidget(self.exposure, 7, 3)
+        self.layout.addWidget(self.preview_btn, 7, 4)
+        self.layout.addWidget(self.header_trajectory_selection, 8, 1)
+        self.layout.addWidget(self.trajectory_selection, 9, 1)
+        self.layout.addWidget(self.header_new_trajectory, 8, 2)
+        self.layout.addWidget(self.new_trajectory_btn, 9, 2)
+        self.layout.addWidget(self.header_start_point, 8, 3)
+        self.layout.addWidget(self.start_point_btn, 9, 3)
+        self.layout.addWidget(self.header_end_point, 8, 4)
+        self.layout.addWidget(self.end_point_btn, 9, 4)
+        self.layout.addWidget(self.send_pattern_btn, 10, 4, 2, 1)
+        self.layout.setRowStretch(11, 1)
 
         self.show()
 

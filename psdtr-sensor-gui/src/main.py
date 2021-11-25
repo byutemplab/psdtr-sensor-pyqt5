@@ -17,17 +17,13 @@ class App(styles.QCustomTabWidget):
 
     def __init__(self):
         super().__init__()
-        self.left = 320
-        self.top = 40
         self.title = 'TEMPLAB P-SDTR Sensor'
-        self.width = 740
-        self.height = 680
         self.InitUI()
 
     def InitUI(self):
         self.setWindowTitle(self.title)
         self.setWindowIcon(QIcon('icons/psdtr-sensor-icon.png'))
-        self.setGeometry(self.left, self.top, self.width, self.height)
+        # self.setGeometry(self.left, self.top, self.width, self.height)
 
         self.projector_tab = ProjectorTab()
         self.addTab(self.projector_tab, QIcon(

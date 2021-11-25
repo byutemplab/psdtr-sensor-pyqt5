@@ -52,59 +52,74 @@ class GrainsFinderTab(QWidget):
         self.header = QLabel(self)
         self.header.setFont(font)
         self.header.setText("Grains Finder")
-        self.header.move(30, 20)
+        self.header.setContentsMargins(0, 10, 0, 10)
 
         # Set font for all small headers
         font = QFont()
         font.setPointSize(8)
 
-        # Number of measurements label
-        self.header = QLabel(self)
-        self.header.setFont(font)
-        self.header.setText("Upload image")
-        self.header.move(30, 70)
+        # Upload image label
+        self.header_upload = QLabel(self)
+        self.header_upload.setFont(font)
+        self.header_upload.setText("Upload image")
+        self.header_upload.move(30, 70)
 
         # Upload an image widget and button
-        button = UploadButton("", self)
-        button.resize(100, 50)
-        button.setIcon(QIcon("icons/upload.png"))
-        button.setIconSize(QSize(50, 100))
-        button.move(30, 100)
+        self.upload_area = UploadButton("", self)
+        self.upload_area.setFixedSize(150, 50)
+        self.upload_area.setIcon(QIcon("icons/upload.png"))
+        self.upload_area.setIconSize(QSize(100, 50))
+        self.upload_area.move(30, 100)
 
         # Threshold slider label
-        self.header = QLabel(self)
-        self.header.setFont(font)
-        self.header.setText("Threshold")
-        self.header.move(30 + 133, 70)
+        self.header_threshold = QLabel(self)
+        self.header_threshold.setFont(font)
+        self.header_threshold.setText("Threshold")
+        self.header_threshold.move(30 + 133, 70)
 
         # Canny edges threshold slider
-        self.slider = QSlider(Qt.Horizontal, self)
-        self.slider.setGeometry(50, 600, 100, 50)
-        self.slider.setMinimum(0)
-        self.slider.setMaximum(1000)
-        self.slider.setValue(100)
-        self.slider.valueChanged.connect(self.UpdateThreshold)
-        self.slider.move(30 + 133, 100)
+        self.threshold_slider = QSlider(Qt.Horizontal, self)
+        self.threshold_slider.setGeometry(50, 600, 100, 50)
+        self.threshold_slider.setMinimum(0)
+        self.threshold_slider.setMaximum(1000)
+        self.threshold_slider.setValue(100)
+        self.threshold_slider.valueChanged.connect(self.UpdateThreshold)
+        self.threshold_slider.move(30 + 133, 100)
 
         self.label_raw = QLabel(self)
-        self.label_raw.move(30, 200)
-        self.label_raw.resize(200, 200)
+        self.label_raw.setFixedSize(230, 180)
 
         self.label_preprocessed = QLabel(self)
-        self.label_preprocessed.move(250, 200)
-        self.label_preprocessed.resize(200, 200)
+        self.label_preprocessed.setFixedSize(230, 180)
 
         self.label_preprocessed_2 = QLabel(self)
-        self.label_preprocessed_2.move(30, 420)
-        self.label_preprocessed_2.resize(200, 200)
+        self.label_preprocessed_2.setFixedSize(230, 180)
 
         # self.label_preprocessed_3 = QLabel(self)
-        # self.label_preprocessed_3.move(250, 420)
-        # self.label_preprocessed_3.resize(200, 200)
+        # self.label_preprocessed_3.setFixedSize(230, 180)
+
+        # Set layout
+        self.layout = QGridLayout()
+        self.setLayout(self.layout)
+        self.layout.setColumnStretch(0, 1)
+        self.layout.setColumnStretch(5, 1)
+        self.layout.setRowMinimumHeight(0, 30)
+        self.layout.addWidget(self.header, 0, 1, 2, 4, Qt.AlignTop)
+        self.layout.addWidget(self.header_upload, 2, 1, 1, 1)
+        self.layout.addWidget(self.upload_area, 3, 1, 1, 1)
+        self.layout.addWidget(self.header_threshold, 2, 3, 1, 1)
+        self.layout.addWidget(self.threshold_slider, 3, 3, 1, 1)
+        self.layout.addWidget(self.label_raw, 4, 1, 1, 2)
+        self.layout.addWidget(self.label_preprocessed, 4, 3, 1, 2)
+        self.layout.addWidget(self.label_preprocessed_2, 5, 1, 1, 2)
+        # self.layout.addWidget(self.label_preprocessed_3, 5, 3, 1, 2)
+        self.layout.setRowStretch(6, 1)
+
+        self.show()
 
     def UpdateThreshold(self):
         if(self.map is not None):
-            self.map.UpdateThreshold(self.slider.value())
+            self.map.UpdateThreshold(self.threshold_slider.value())
             self.label_preprocessed.setPixmap(QPixmap(self.map.edges_path))
             # self.label_preprocessed.setPixmap(
             # QPixmap(self.map.thresholded_path))
