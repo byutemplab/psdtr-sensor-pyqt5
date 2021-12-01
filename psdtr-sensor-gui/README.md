@@ -2,7 +2,7 @@
 
 | Set trajectories in projectors | Set waveform generator settings |
 | --- | --- |
-| ![projectors-tab](/resources/dmd-projector-v2.gif) | ![signal-generator-tab](/resources/signal-generator-v1.gif) |
+| ![projectors-tab](/psdtr-sensor-gui/resources/dmd-projector-v2.gif) | ![signal-generator-tab](/psdtr-sensor-gui/resources/signal-generator-v1.gif) |
 
 #### Installation instructions
 ##### Python requirements:
@@ -16,4 +16,4 @@
 - _NOTE: TI GUI will stop working once you replace the driver. If you want to restore the WinUSB driver, go to Device Manager, search for the libusb-win32 driver, uninstall and check 'Delete the driver software for this device'_
 ##### CMOS Camera drivers:
 
-#### User manual [here](/resources/user-guide-v1.1.pdf)
+#### User manual [here](/psdtr-sensor-gui/resources/user-guide-v1.1.pdf)
