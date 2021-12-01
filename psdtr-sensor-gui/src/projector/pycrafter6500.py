@@ -33,12 +33,18 @@ def bitstobytes(a):
 
 
 class dmd():
-    def __init__(self):
-        self.TryConnection()
+    def __init__(self, device=None, address=None):
+        self.dev = device
+        self.address = address
+        self.connected = True
 
     def TryConnection(self):
         try:
-            self.dev = usb.core.find(idVendor=0x0451, idProduct=0xc900)
+            devices = list(usb.core.find(
+                idVendor=0x0451, idProduct=0xc900, find_all=True))
+            for dev in devices:
+                if (dev.address == self.address):
+                    self.dev = dev
             self.dev.set_configuration()
             self.ans = []
             self.connected = True

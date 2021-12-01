@@ -1,4 +1,6 @@
 import os
+import usb.core
+import usb.util
 
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
@@ -30,7 +32,26 @@ class ProjectorTab(QWidget):
     def __init__(self):
         super().__init__()
         self.dots_pattern = DotsPattern()
-        self.rgb_projector = dmd()  # Inititalize dmd
+
+        # Set connection to projectors
+        devices = list(usb.core.find(
+            idVendor=0x0451, idProduct=0xc900, find_all=True))
+        print("Found {} projector(s)".format(len(devices)))
+
+        if(len(devices) == 0):
+            print("No projector found")
+            self.projector_1 = dmd()
+            self.projector_2 = dmd()
+        elif(len(devices) == 1):
+            self.projector_1 = dmd(devices[0], devices[0].address)
+            self.projector_2 = dmd()
+        elif(len(devices) == 2):
+            self.projector_1 = dmd(devices[0], devices[0].address)
+            self.projector_2 = dmd(devices[1], devices[1].address)
+
+        self.rgb_projector = self.projector_1
+        self.laser_projector = self.projector_2
+
         self.InitUI()
 
     def InitUI(self):
@@ -168,12 +189,16 @@ class ProjectorTab(QWidget):
         self.end_point_btn.move(30 + 133 * 3, 550)
         self.end_point_btn.resize(100, 30)
 
+        # Switch connection of projectors
+        self.switch_btn = QPushButton('Switch projectors', self)
+        self.switch_btn.clicked.connect(self.Switch)
+        self.switch_btn.setToolTip(
+            'Switch connection of laser and rgb projectors')
+
         # Send pattern to projector
         self.send_pattern_btn = QPushButton('Send Pattern', self)
         self.send_pattern_btn.clicked.connect(self.SendPattern)
         self.send_pattern_btn.setToolTip('Send pattern to projector')
-        self.send_pattern_btn.move(30 + 133 * 3, 620)
-        self.send_pattern_btn.resize(100, 30)
 
         # Set layout
         self.layout = QGridLayout()
@@ -199,6 +224,7 @@ class ProjectorTab(QWidget):
         self.layout.addWidget(self.start_point_btn, 9, 3)
         self.layout.addWidget(self.header_end_point, 8, 4)
         self.layout.addWidget(self.end_point_btn, 9, 4)
+        self.layout.addWidget(self.switch_btn, 10, 3, 2, 1)
         self.layout.addWidget(self.send_pattern_btn, 10, 4, 2, 1)
         self.layout.setRowStretch(11, 1)
 
@@ -236,6 +262,14 @@ class ProjectorTab(QWidget):
         # Toggle on starting point selection button
         if(self.start_point_btn.isChecked() == False):
             self.start_point_btn.toggle()
+
+    def Switch(self):
+        if (self.rgb_projector == self.projector_1):
+            self.rgb_projector = self.projector_2
+            self.laser_projector = self.projector_1
+        else:
+            self.rgb_projector = self.projector_1
+            self.laser_projector = self.projector_2
 
     def SendPattern(self):
         print('Sending pattern to projector')

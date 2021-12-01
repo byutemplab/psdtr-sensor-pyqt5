@@ -42,6 +42,7 @@ class dmd():
     def TryConnection(self):
         try:
             self.dev = usb.core.find(idVendor=0x0451, idProduct=0xc900)
+            print(usb.util.get_string(self.dev, self.dev.iManufacturer))
             self.dev.set_configuration()
             self.ans = []
             self.connected = True
