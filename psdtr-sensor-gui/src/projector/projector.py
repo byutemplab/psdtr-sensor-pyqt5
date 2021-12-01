@@ -31,7 +31,8 @@ class PlotNavigation(NavigationToolbar):
 class ProjectorTab(QWidget):
     def __init__(self):
         super().__init__()
-        self.dots_pattern = DotsPattern()
+        self.green_dots_pattern = DotsPattern()
+        self.laser_dots_pattern = DotsPattern()
 
         # Set connection to projectors
         devices = list(usb.core.find(
@@ -92,23 +93,36 @@ class ProjectorTab(QWidget):
         self.num_measurements = QSpinBox(self)
         self.num_measurements.move(30, 480)
         self.num_measurements.resize(100, 30)
-        self.num_measurements.setValue(self.dots_pattern.num_measurements)
+        self.num_measurements.setValue(
+            self.green_dots_pattern.num_measurements)
         self.num_measurements.setRange(2, 50)
         self.num_measurements.valueChanged.connect(self.ChangeNumMeasurements)
 
-        # Point diameter label
-        self.header_diameter = QLabel(self)
-        self.header_diameter.setFont(font)
-        self.header_diameter.setText("Point Diameter")
-        self.header_diameter.move(30 + 133, 460)
+        # Green Point diameter label
+        self.header_green_diameter = QLabel(self)
+        self.header_green_diameter.setFont(font)
+        self.header_green_diameter.setText("Green Point Diameter")
 
-        # Point diameter
-        self.point_diameter = QSpinBox(self)
-        self.point_diameter.move(30 + 133, 480)
-        self.point_diameter.resize(100, 30)
-        self.point_diameter.setValue(self.dots_pattern.point_diameter)
-        self.point_diameter.setRange(1, 100)
-        self.point_diameter.valueChanged.connect(self.ChangePointDiameter)
+        # Green Point diameter
+        self.green_point_diameter = QSpinBox(self)
+        self.green_point_diameter.setValue(
+            self.green_dots_pattern.point_diameter)
+        self.green_point_diameter.setRange(1, 100)
+        self.green_point_diameter.valueChanged.connect(
+            self.ChangeGreenPointDiameter)
+
+        # Laser Point diameter label
+        self.header_laser_diameter = QLabel(self)
+        self.header_laser_diameter.setFont(font)
+        self.header_laser_diameter.setText("Laser Point Diameter")
+
+        # Laser Point diameter
+        self.laser_point_diameter = QSpinBox(self)
+        self.laser_point_diameter.setValue(
+            self.laser_dots_pattern.point_diameter)
+        self.laser_point_diameter.setRange(1, 100)
+        self.laser_point_diameter.valueChanged.connect(
+            self.ChangeLaserPointDiameter)
 
         # Exposure time label
         self.header_exposure = QLabel(self)
@@ -121,7 +135,7 @@ class ProjectorTab(QWidget):
         self.exposure.move(30 + 133 * 2, 480)
         self.exposure.resize(100, 30)
         self.exposure.setRange(0, 1000)
-        self.exposure.setValue(self.dots_pattern.exposure)
+        self.exposure.setValue(self.green_dots_pattern.exposure)
         self.exposure.valueChanged.connect(self.ChangeExposure)
 
         # Preview button
@@ -208,14 +222,16 @@ class ProjectorTab(QWidget):
         self.layout.setRowMinimumHeight(0, 30)
         self.layout.addWidget(self.header, 0, 1, 2, 4, Qt.AlignTop)
         self.layout.addWidget(self.plot, 2, 1, 2, 4)
-        self.layout.addWidget(self.toolbar, 4, 1, 2, 4)
+        self.layout.addWidget(self.toolbar, 4, 1, 2, 3)
         self.layout.addWidget(self.header_measurements, 6, 1)
         self.layout.addWidget(self.num_measurements, 7, 1)
-        self.layout.addWidget(self.header_diameter, 6, 2)
-        self.layout.addWidget(self.point_diameter, 7, 2)
-        self.layout.addWidget(self.header_exposure, 6, 3)
-        self.layout.addWidget(self.exposure, 7, 3)
-        self.layout.addWidget(self.preview_btn, 7, 4)
+        self.layout.addWidget(self.header_green_diameter, 6, 2)
+        self.layout.addWidget(self.green_point_diameter, 7, 2)
+        self.layout.addWidget(self.header_laser_diameter, 6, 3)
+        self.layout.addWidget(self.laser_point_diameter, 7, 3)
+        self.layout.addWidget(self.header_exposure, 6, 4)
+        self.layout.addWidget(self.exposure, 7, 4)
+        self.layout.addWidget(self.preview_btn, 4, 4, 2, 1)
         self.layout.addWidget(self.header_trajectory_selection, 8, 1)
         self.layout.addWidget(self.trajectory_selection, 9, 1)
         self.layout.addWidget(self.header_new_trajectory, 8, 2)
@@ -239,13 +255,17 @@ class ProjectorTab(QWidget):
             self.start_point_btn.toggle()
 
     def ChangeNumMeasurements(self, value):
-        self.dots_pattern.num_measurements = value
+        self.green_dots_pattern.num_measurements = value
 
-    def ChangePointDiameter(self, value):
-        self.dots_pattern.point_diameter = value
+    def ChangeGreenPointDiameter(self, value):
+        self.green_dots_pattern.point_diameter = value
+
+    def ChangeLaserPointDiameter(self, value):
+        self.laser_dots_pattern.point_diameter = value
 
     def ChangeExposure(self, value):
-        self.dots_pattern.exposure = value
+        self.green_dots_pattern.exposure = value
+        self.laser_dots_pattern.exposure = value
 
     def ChangeTrajectorySelection(self, value):
         # Get index of selected trajectory
@@ -274,7 +294,8 @@ class ProjectorTab(QWidget):
     def SendPattern(self):
         print('Sending pattern to projector')
         self.plot.UpdateFrames()
-        self.dots_pattern.Send(self.rgb_projector)
+        self.green_dots_pattern.Send(self.rgb_projector)
+        self.laser_dots_pattern.Send(self.laser_projector)
 
     def keyPressEvent(self, event):
         key = event.key()
@@ -289,6 +310,16 @@ class ProjectorTab(QWidget):
         # On E key press, toggle end point button
         if key == Qt.Key_E:
             self.end_point_btn.toggle()
+
+    def Enable(self, enable):
+        self.num_measurements.setEnabled(enable)
+        self.green_point_diameter.setEnabled(enable)
+        self.laser_point_diameter.setEnabled(enable)
+        self.exposure.setEnabled(enable)
+        self.trajectory_selection.setEnabled(enable)
+        self.new_trajectory_btn.setEnabled(enable)
+        self.start_point_btn.setEnabled(enable)
+        self.end_point_btn.setEnabled(enable)
 
 
 class PatternPlot(FigureCanvas):
@@ -305,6 +336,9 @@ class PatternPlot(FigureCanvas):
                                    QSizePolicy.Expanding)
         FigureCanvas.updateGeometry(self)
         self.plot()
+
+        # delete
+        self.test = 0
 
     def plot(self):
         # Set initial parameters
@@ -329,19 +363,28 @@ class PatternPlot(FigureCanvas):
         self.draw()
 
     def UpdateFrames(self):
-        self.parent.dots_pattern.Create(self.trajectories_list)
+        self.parent.green_dots_pattern.UpdatePattern(
+            self.trajectories_list, 'rgb')
+        self.parent.laser_dots_pattern.UpdatePattern(
+            self.trajectories_list, 'laser')
 
     def PreviewAnimation(self):
         if(self.parent.preview_btn.isChecked() == True):
+            # Disable controls
+            self.parent.Enable(False)
+
             self.UpdateFrames()
             self.RemoveTrajectories()
 
             # Custom binary colormap dependant on point_color selection
-            cmap = matplotlib.colors.ListedColormap(['none', '#00ff00'])
+            cmap_green = matplotlib.colors.ListedColormap(['none', '#00ff00'])
+            cmap_laser = matplotlib.colors.ListedColormap(['none', '#ff0000'])
 
             # Start with first frame
-            self.graph = self.ax.imshow(
-                self.parent.dots_pattern.frames_array[0], cmap=cmap)
+            self.graph_green = self.ax.imshow(
+                self.parent.green_dots_pattern.frames_array[0], cmap=cmap_green)
+            self.graph_laser = self.ax.imshow(
+                self.parent.laser_dots_pattern.frames_array[0], cmap=cmap_laser)
 
             # Superpose background to hide initial frame
             self.ax.imshow(self.image, extent=[0, RES_Y, RES_X, 0])
@@ -350,17 +393,22 @@ class PatternPlot(FigureCanvas):
             self.frame_num = 0
 
             def UpdateFig(*args):
-                self.graph.set_array(
-                    self.parent.dots_pattern.frames_array[self.frame_num % self.parent.dots_pattern.num_measurements])
+                self.graph_green.set_array(
+                    self.parent.green_dots_pattern.frames_array[self.frame_num % self.parent.green_dots_pattern.num_measurements])
+                self.graph_laser.set_array(
+                    self.parent.laser_dots_pattern.frames_array[self.frame_num % self.parent.laser_dots_pattern.num_measurements])
                 self.frame_num += 1
-                return self.graph,
+                return self.graph_green, self.graph_laser
 
             # Set animation
             self.animation = matplotlib.animation.FuncAnimation(
-                self.fig, UpdateFig, interval=self.parent.dots_pattern.exposure, blit=True)
+                self.fig, UpdateFig, interval=self.parent.green_dots_pattern.exposure, blit=True)
 
             self.draw()
         else:
+            # Re-enable controls
+            self.parent.Enable(True)
+
             try:
                 # Pause animation
                 self.animation.pause()
@@ -369,7 +417,7 @@ class PatternPlot(FigureCanvas):
                 self.ax.imshow(self.image, extent=[0, RES_Y, RES_X, 0])
                 self.ShowTrajectories()
             except:
-                print("no animation yet")
+                print("No animation yet")
 
     def OnClick(self, event):
         if (self.parent.start_point_btn.isChecked()):
