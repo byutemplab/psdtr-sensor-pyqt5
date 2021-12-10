@@ -18,7 +18,7 @@ import cv2
 
 from .imageprocessing import Scan
 
-CAMERA_CONNECTED = True
+CAMERA_CONNECTED = False
 
 
 class HelicamTab(QWidget):

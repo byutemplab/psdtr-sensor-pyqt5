@@ -13,12 +13,14 @@ Complete user manual [here](/resources/user-guide-v1.1.pdf)
 
 #### Installation instructions
 ##### Python requirements:
-- Run `pip install -r requirements.txt` inside this folder
-##### Projector drivers:
+- Run `pip install -r requirements.txt` inside the src folder
+##### Projector driver:
 - Download Zadig (http://zadig.akeo.ie/)
 - Connect the projector
 - Go to 'Options' -> 'List All Devices'
 - Look for 'DLCP900 (Interface 0)
 - Replace WinUSB driver with libusb-win32 driver
 - _NOTE: TI GUI will stop working once you replace the driver. If you want to restore the WinUSB driver, go to Device Manager, search for the libusb-win32 driver, uninstall and check 'Delete the driver software for this device'_
-##### CMOS Camera drivers:
+##### Helicam sdk:
+- Download and install the sdk from (https://github.com/byutemplab/helicam-sdk)
+##### CMOS Camera driver:
