@@ -18,7 +18,7 @@ import cv2
 
 from .imageprocessing import Scan
 
-CAMERA_CONNECTED = False
+CAMERA_CONNECTED = True
 
 
 class HelicamTab(QWidget):
@@ -111,7 +111,7 @@ class PatternPlot(FigureCanvas):
     def plot(self):
 
         # Import data
-        path = "helicam\logs\intensity_img_2021_10_12-05_18_58_PM.npy"
+        path = "helicam\intensity_img_2021_10_12-05_18_58_PM.npy"
         data = np.load(path)
 
         # Start by showing frame 0 and I parameter
