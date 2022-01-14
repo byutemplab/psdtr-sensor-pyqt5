@@ -45,7 +45,6 @@ class QCustomTabWidget(QTabWidget):
 class QCustomProxyStyle(QProxyStyle):
     def drawControl(self, element, opt, painter, widget):
         if element == QStyle.CE_TabBarTabLabel:
-            ic = self.pixelMetric(QStyle.PM_TabBarIconSize)
             r = QRect(opt.rect)
             w = 0 if opt.icon.isNull() else opt.rect.width() + \
                 self.pixelMetric(QStyle.PM_TabBarIconSize)

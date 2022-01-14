@@ -5,7 +5,7 @@ Current features:
 - Analyze input data from the lock-in camera
 - Pre-process electron microscope images to find grain boundaries
 
-Complete user manual [here](/resources/user-guide-v1.1.pdf)
+Complete user manual [here](/resources/user-guide-v1.2.pdf)
 
 | Set trajectories in projectors | Set waveform generator settings |
 | --- | --- |
