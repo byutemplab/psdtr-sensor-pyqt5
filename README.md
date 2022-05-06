@@ -29,6 +29,6 @@ Complete user manual [here](/resources/user-guide-v1.2.pdf)
 ##### CMOS Camera driver:
 - Download native driver from [here](https://astronomy-imaging-camera.com/software-drivers)
 
-### Running the GUI
+### Starting the server
 - Open the terminal from the src folder
-- Run `python main.py`
+- Run `python server.py`
